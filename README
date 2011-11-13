@@ -1,0 +1,109 @@
+AutoMin is an ExpressionEngine plugin that automates the push-to-production task of combining/compiling your JavaScript and CSS files. After initial processing, AutoMin caches the result until one of the files is modified. Once a file is modified, Automin regenerates the cache and uses the new versions automatically.
+
+AutoMin replaces the script/css tags with a single tag pointing to the compiled result. If an error occurs and AutoMin cannot correctly parse your CSS or JS files, it will return your original tags untouched. See the template log (Admin->Output and Debugging) for the exact reason if it does this or if things are not working as expected.
+
+A note about EE 1.X usage: I've stopped maintaining the EE 1 plugin. It still has support for the basics, but I will not be building any new features into the EE 1.X version of AutoMin.
+
+Thanks to the minify project for their CSS compressor and the JSMin project for their JavaScript minifiaction class. I've tried to develop this plugin in a clean and pragmatic fasion to make it easy for you to modify, should modification be necessary to work with your setup.
+
+Minify: http://code.google.com/p/minify/
+JSMin: http://www.crockford.com/javascript/jsmin.html
+
+To report a bug or feature request: http://code.getbunch.com/automin/issues
+For questions or support, email me: jesse@getbunch.com
+
+------------------
+CHANGELOG:
+------------------		
+
+Version 1.3.1 - Fixed an issue where Automin bypassed the EE Output class when HTML compression was enabled
+Version 1.3.0 - Added support for EE globals, path variables, stylesheet tags, etc
+Version 1.2.4 - Fixed a HTML minification compatibility issue with Low Reorder
+Version 1.2.3 - Hotfix for logic error in AutoMin hook
+Version 1.2.2 - Hotfix for HTML markup compression issues
+Version 1.2.0 - Added markup minification. Added module settings for EE2. Added support for @import in CSS (see issue #4). Added template debugging and file size reporting.
+Version 1.1.0 - Added support for EE 1.X
+Version 1.0.1 - Fixed Bug #1 - Issue with regex not matching filenames with a hypen
+Version 1.0.0 - Initial Release
+
+------------------
+INSTALLATION:
+------------------
+
+SEE THE EE1 OR EE2 INSTALLATION README.
+
+------------------
+HOW CACHING WORKS:
+------------------
+
+On first run, AutoMin will cause your page load to run slower than usual while it regenerates your cache. After that page load,
+and providing AutoMin can access your cache directory, your site should run much, much faster. AutoMin is intelligent in that
+it knows if you've changed anything between it's tag pairs or if you've changed anything in your CSS or JS. Once it detects a change, it will automatically regenerate it's cache and serve the new version to your users.
+
+------------------
+MARKUP COMPRESSION:
+------------------
+
+For the ultra performance junkie, I've added HTML markup compression to AutoMin for EE 2.X. After installing the necessary CodeIgniter extension, your HTML markup will be compressed by AutoMin before being sent to your browser. See the installation file for detailed instructions.
+
+------------------
+EXAMPLE USAGE:
+------------------
+
+{exp:automin:js type="text/javascript"}
+	<script type="text/javascript" src="/js/jquery.js"></script>
+	<script type="text/javascript" src="/js/jquery.ui.js"></script>
+	<script type="text/javascript" src="/js/jquery.ui.mouse.js"></script>
+	<script type="text/javascript" src="/js/jquery.ui.position.js"></script>
+	<script type="text/javascript" src="/js/jquery.ui.widget.js"></script>
+	<script type="text/javascript" src="/js/jquery.ui.draggable.js"></script>
+	<script type="text/javascript" src="/js/jquery.regex.js"></script>
+	<script type="text/javascript" src="/js/jquery.regex.js"></script>
+	<script type="text/javascript" src="/js/cufon.js"></script>
+	<script type="text/javascript" src="/js/global.js"></script>
+{/exp:automin:js}
+
+{exp:automin:css type="text/css" title="default" rel="stylesheet" media="screen, projection"}
+	<link href="/css/core.css" type="text/css" title="default" rel="stylesheet" media="screen, projection">
+	<link href="/css/design.css" type="text/css" title="default" rel="stylesheet" media="screen, projection">
+{/exp:automin:css}
+
+NOTE: Your CSS and JavaScript paths MUST be web-root relative. 
+
+Here is an example of a correct path:
+<link href="/css/core.css" type="text/css" title="default" rel="stylesheet" media="screen, projection">
+
+And, here are two examples of incorrect paths:
+<link href="css/core.css" type="text/css" title="default" rel="stylesheet" media="screen, projection">
+<link href="../css/core.css" type="text/css" title="default" rel="stylesheet" media="screen, projection">
+
+------------------
+PARAMETERS:
+------------------
+
+Any parameter that you specify will be included as an attribute to the resulting HTML tag that AutoMin produces. Take the examples above,
+for instance:
+
+{exp:automin:js type="text/javascript"} will output a script tag similar to:
+<script src="/automin/7dc66e1b2104b40a9992a3652583f509.js" type="text/javascript"></script>
+
+{exp:automin:css type="text/css" title="default" rel="stylesheet" media="screen, projection"} will output:
+<link href="/automin/55ed34446f3eac6f869f3fe5b375d311.css" type="text/css" title="default" rel="stylesheet" media="screen, projection">		
+
+------------------
+VARIABLES:
+------------------
+
+There are no variables for AutoMin. Anything inside the tag pair will be replaced with the final output.
+
+------------------
+TROUBLESHOOTING:
+------------------
+
+Turn on template debugging in Admin->Output and Debugging to view detailed log messages. When reporting issues, please include your template log.
+
+Make sure your cache directory is set in the module's settings and that the directory is writeable by PHP. In most cases, you'll need to assign that directory 777 permissions.
+
+If AutoMin breaks your CSS or JS code, make sure that your code contains no syntax errors. In your JS, you need to make sure that you always terminate JS statements with a semi-colon.
+
+Make sure that your CSS images are web-root relative. Use URLs like: url('/css/img/myimage.jpg') instead of url('img/myimage.jpg')
