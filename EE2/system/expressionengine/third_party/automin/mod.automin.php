@@ -2,6 +2,7 @@
 
 include('libraries/class.minify_css_compressor.php');
 include('libraries/class.jsmin.php');
+include('libraries/lessphp/lessc.inc.php');
 					
 /**
  * AutoMin Class
@@ -49,6 +50,46 @@ class Automin {
 	}
 
 	// --------------------------------------------------------------------
+
+	/**
+	 * Minifies LESS
+	 * @return void
+	 */
+	function less() {
+		
+		$this->_template_log('Processing LESS');
+		
+		$strTags = $this->_FetchEETagData();
+		
+		if ($this->arrPreferences['automin_enabled'] == 'y') {
+			
+			if (!$this->_CheckForRequiredLibraries()) {
+				$this->_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
+				return $strTags;
+			}
+			
+			$strSource = $this->_ProcessEETagData($strTags, 'less');
+			
+			if (!empty($this->strCacheFilename) && !empty($strSource)) {
+				
+				$this->_template_log('AutoMin was successful. Writing new tags to output.');
+				return sprintf('<link href="%s" %s>', $this->strCacheFilename, $this->_FetchTagParameters());
+				
+			} else {
+				
+				$this->_template_log('An error occurred. Your LESS code has not been compiled.');
+				return $strTags;
+				
+			}
+			
+		} else {
+			
+			$this->_template_log('AutoMin not enabled. Returning original tag contents.');
+			return $strTags;
+			
+		}
+		
+	}
 	
 	/**
 	 * Minifies CSS and Code
@@ -155,6 +196,12 @@ class Automin {
 			$this->_template_log('JSMin class was not loaded correctly.');
 			return FALSE;
 		}
+
+		// LESS Parser
+		if (!class_exists('lessc')) {
+			$this->_template_log('The LESS compiler class was not loaded correctly.');
+			return FALSE;
+		}
 		
 		return TRUE;
 		
@@ -218,7 +265,11 @@ class Automin {
 		$strTagHash = md5($strTags);
 		
 		// Add the extension (js or css)
-		$strCacheFilename = $strTagHash . ".$strType";
+		$strFileType = $strType;
+		if ($strType == 'less') {
+			$strFileType = 'css';
+		}
+		$strCacheFilename = $strTagHash . ".$strFileType";
 		
 		// Construct the filepath to the cache
 		$strCacheFilePath = $this->arrPreferences['cache_server_path'] . $strCacheFilename;
@@ -289,9 +340,15 @@ class Automin {
 		
 		switch($strType) {
 		
+			case 'less':
+				
+				preg_match_all("/href\=\"([A-Za-z0-9\.\/\_\-\?\=\:]+.less)\"/", $strTagData, $arrMatches);
+				
+			break;
+
 			case 'css':
 				
-				preg_match_all("/href\=\"([A-Za-z0-9\.\/\_\-\?\=\:]+)\"/", $strTagData, $arrMatches);
+				preg_match_all("/href\=\"([A-Za-z0-9\.\/\_\-\?\=\:]+.css)\"/", $strTagData, $arrMatches);
 				
 			break;
 			
@@ -299,7 +356,7 @@ class Automin {
 			
 			case 'js':
 				
-				preg_match_all("/src\=\"([A-Za-z0-9\.\/\_\-\?\=\:]+)\"/", $strTagData, $arrMatches);
+				preg_match_all("/src\=\"([A-Za-z0-9\.\/\_\-\?\=\:]+.js)\"/", $strTagData, $arrMatches);
 			
 			break;
 			
@@ -624,6 +681,28 @@ class Automin {
 		}
 		
 		switch($strType) {
+
+			case 'less':
+			
+				$this->_template_log('Compiling LESS');
+				
+				$intOldSize = strlen($strDataToReturn);
+				$objLess = new lessc($strDataToReturn);
+				try {
+					$strDataToReturn = $objLess->parse();	
+				} catch (Exception $e) {
+					$this->_template_log('ERROR: An exception occurred while compiling your less code.');
+					return FALSE;
+				}
+				$intNewSize = strlen($strDataToReturn);
+				
+				$this->_template_log(sprintf('Compilation has finished. %s bytes became %s bytes or a %s%% savings', $intOldSize, $intNewSize, (($intNewSize/$intOldSize) * 100)));
+				
+				return $strDataToReturn;
+			
+			break;
+
+			// -------
 		
 			case 'css':
 			
