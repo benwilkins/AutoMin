@@ -103,7 +103,17 @@ for instance:
 <link href="/automin/55ed34446f3eac6f869f3fe5b375d311.css?modified=8832678882928" type="text/css" title="default" rel="stylesheet" media="screen, projection">
 
 ------------------
-USING LESS:
+EE CONFIG OVERRIDES (EE 2.X ONLY):
+------------------
+
+$config['automin_automin_enabled'] = 'y';
+$config['automin_cache_enabled'] = 'y';
+$config['automin_compress_markup'] = 'n';
+$config['automin_cache_server_path'] = "{$_SERVER['DOCUMENT_ROOT']}/automin/";
+$config['automin_cache_url'] = '/automin/';
+
+------------------
+USING LESS (EE 2.X ONLY):
 ------------------	
 
 If you use AutoMin to compile your LESS source files, you DO NOT need to include the less.js parser file. AutoMin will parse your 
