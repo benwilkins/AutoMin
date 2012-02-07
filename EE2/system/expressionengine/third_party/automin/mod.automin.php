@@ -61,7 +61,7 @@ class Automin {
 		
 		$strTags = $this->_FetchEETagData();
 		
-		if ($this->arrPreferences['automin_enabled'] == 'y') {
+		if ($this->_PreferenceValueForKey('automin_enabled') == 'y') {
 			
 			if (!$this->_CheckForRequiredLibraries()) {
 				$this->_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
@@ -101,7 +101,7 @@ class Automin {
 		
 		$strTags = $this->_FetchEETagData();
 		
-		if ($this->arrPreferences['automin_enabled'] == 'y') {
+		if ($this->_PreferenceValueForKey('automin_enabled') == 'y') {
 			
 			if (!$this->_CheckForRequiredLibraries()) {
 				$this->_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
@@ -143,7 +143,7 @@ class Automin {
 		
 		$strTags = $this->_FetchEETagData();
 		
-		if ($this->arrPreferences['automin_enabled'] == 'y') {
+		if ($this->_PreferenceValueForKey('automin_enabled') == 'y') {
 			
 			if (!$this->_CheckForRequiredLibraries()) {
 				$this->_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
@@ -272,8 +272,8 @@ class Automin {
 		$strCacheFilename = $strTagHash . ".$strFileType";
 		
 		// Construct the filepath to the cache
-		$strCacheFilePath = $this->arrPreferences['cache_server_path'] . $strCacheFilename;
-		$this->strCacheFilename = $this->arrPreferences['cache_url'] . $strCacheFilename;
+		$strCacheFilePath = $this->_PreferenceValueForKey('cache_server_path') . $strCacheFilename;
+		$this->strCacheFilename = $this->_PreferenceValueForKey('cache_url') . $strCacheFilename;
 		
 		// -------------------------------------
 		//  Extract the file names
@@ -519,11 +519,11 @@ class Automin {
 			return FALSE;
 		}
 		
-		if (!is_dir($this->arrPreferences['cache_server_path'])) {
+		if (!is_dir($this->_PreferenceValueForKey('cache_server_path'))) {
 			
 			$this->_template_log('Attempting to create cache directory');
 			
-			if (!@mkdir($this->arrPreferences['cache_server_path'], 0777)) {
+			if (!@mkdir($this->_PreferenceValueForKey('cache_server_path'), 0777)) {
 				
 				$this->_template_log('Unable to create the cache directory');
 				return FALSE;
@@ -531,7 +531,7 @@ class Automin {
 			}
 			
 			$this->_template_log('Cache directory created successfully. Making it writable.');
-			@chmod($this->arrPreferences['cache_server_path'], 0777);
+			@chmod($this->_PreferenceValueForKey('cache_server_path'), 0777);
 			
 		}
 		
@@ -565,12 +565,12 @@ class Automin {
 	function _IsCacheValid($strCacheFilePath, $intLatestModified) {
 		
 		// Caching disabled?
-		if ($this->arrPreferences['cache_enabled'] == 'n') {
+		if ($this->_PreferenceValueForKey('cache_enabled') == 'n') {
 			$this->_template_log('Caching disabled in preferences. Therefore cache is invalid.');
 			return FALSE;
 		}
 		
-		if (!@is_dir($this->arrPreferences['cache_server_path'])) {
+		if (!@is_dir($this->_PreferenceValueForKey('cache_server_path'))) {
 			
 			$this->_template_log('ERROR: Cache directory doesn\'t exist. Therefore the cache is invalid.');
 			
@@ -828,6 +828,33 @@ class Automin {
 		}
 		
 		
+	}
+
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Retrieves an AutoMin preference, checking for an override in the
+	 * user's configuration file.
+	 * @param $strKey string
+	 * @return string
+	 * @author Jesse Bunch
+	*/
+	function _PreferenceValueForKey($strKey) {
+		
+		$strReturnValue = FALSE;
+
+		if (isset($this->arrPreferences[$strKey])) {
+			$strReturnValue = $this->arrPreferences[$strKey];			
+		}
+		
+		$CI =& get_instance();
+		$strConfigKey = 'automin_' . $strKey;
+		if ($CI->config->item($strConfigKey)) {
+			$strReturnValue = $CI->config->item($strConfigKey);
+		}
+
+		return $strReturnValue;
+
 	}
 	
 
