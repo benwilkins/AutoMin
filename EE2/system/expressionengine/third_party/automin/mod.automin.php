@@ -70,7 +70,7 @@ class Automin {
 			
 			$strSource = $this->_ProcessEETagData($strTags, 'less');
 			
-			if (!empty($this->strCacheFilename) && !empty($strSource)) {
+			if (!empty($this->strCacheFilename) && $strSource) {
 				
 				$this->_template_log('AutoMin was successful. Writing new tags to output.');
 				return sprintf('<link href="%s" %s>', $this->strCacheFilename, $this->_FetchTagParameters());
@@ -110,7 +110,7 @@ class Automin {
 			
 			$strSource = $this->_ProcessEETagData($strTags, 'css');
 			
-			if (!empty($this->strCacheFilename) && !empty($strSource)) {
+			if (!empty($this->strCacheFilename) && $strSource) {
 				
 				$this->_template_log('AutoMin was successful. Writing new tags to output.');
 				return sprintf('<link href="%s" %s>', $this->strCacheFilename, $this->_FetchTagParameters());
@@ -152,7 +152,7 @@ class Automin {
 			
 			$strSource = $this->_ProcessEETagData($strTags, 'js');
 			
-			if (!empty($this->strCacheFilename) && !empty($strSource)) {
+			if (!empty($this->strCacheFilename) && $strSource) {
 				
 				$this->_template_log('AutoMin was successful. Writing new tags to output.');
 				return sprintf('<script src="%s" %s></script>', $this->strCacheFilename, $this->_FetchTagParameters());
@@ -295,7 +295,7 @@ class Automin {
 		// -------------------------------------
 
 		if (!$this->_IsCacheValid($strCacheFilePath, $intLatestModified)) {
-			
+
 			$this->_template_log('Cache isn\'t valid. Regenerating...');
 			
 			$strData = $this->_RegenerateCacheFromFilenames($arrFilenames, $strType);
@@ -303,7 +303,15 @@ class Automin {
 			if ($strData) {
 				
 				$this->_template_log('Writing source to cache');
-				$this->_WriteStringToFile($strData, $strCacheFilePath);
+				
+				if (!$this->_WriteStringToFile($strData, $strCacheFilePath)) {
+					$this->_template_log('An error occurred while trying to save the compiled source.');
+					return FALSE;
+				} else {
+
+					$this->strCacheFilename .= '?modified=' . $intLatestModified;
+					return TRUE;
+				}
 
 			} else {
 			
@@ -316,8 +324,10 @@ class Automin {
 			
 		} else {
 			
+			// Append the latest modified time
+			$this->strCacheFilename .= '?modified=' . $intLatestModified;
 			$this->_template_log('Valid cache found. Returning cached data.');
-			return $this->_ReadFile($strCacheFilePath);
+			return TRUE;
 		
 		}
 		
@@ -685,15 +695,19 @@ class Automin {
 			case 'less':
 			
 				$this->_template_log('Compiling LESS');
-				
 				$intOldSize = strlen($strDataToReturn);
-				$objLess = new lessc($strDataToReturn);
+				$objLess = new lessc();
+
 				try {
-					$strDataToReturn = $objLess->parse();	
+					$strDataToReturn = $objLess->parse($strDataToReturn);		
 				} catch (Exception $e) {
-					$this->_template_log('ERROR: An exception occurred while compiling your less code.');
+					$this->_template_log('LESS compilation failed with error: ' . $e->getMessage());
 					return FALSE;
 				}
+				
+				$this->_template_log('Compressing CSS returned from LESS compiler');
+				$strDataToReturn = Minify_CSS_Compressor::process($strDataToReturn);
+
 				$intNewSize = strlen($strDataToReturn);
 				
 				$this->_template_log(sprintf('Compilation has finished. %s bytes became %s bytes or a %s%% savings', $intOldSize, $intNewSize, (($intNewSize/$intOldSize) * 100)));
