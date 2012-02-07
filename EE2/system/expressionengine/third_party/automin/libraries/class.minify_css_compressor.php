@@ -68,7 +68,7 @@ class Minify_CSS_Compressor {
      */
     protected function _process($css)
     {
-        $css = str_replace("\r\n", '', $css);
+        $css = str_replace("\r\n", "\n", $css);
         
         // preserve empty comment after '>'
         // http://www.webdevout.net/css-hacks#in_css-selectors
@@ -80,14 +80,12 @@ class Minify_CSS_Compressor {
         $css = preg_replace('@:\\s*/\\*\\s*\\*/@', ':/*keep*/', $css);
         
         // apply callback to all valid comments (and strip out surrounding ws
-		$before = $css;
         $css = preg_replace_callback('@\\s*/\\*([\\s\\S]*?)\\*/\\s*@'
-                    ,array($this, '_commentCB'), $css);
+            ,array($this, '_commentCB'), $css);
 
         // remove ws around { } and last semicolon in declaration block
-        $css = preg_replace('/[\s]*[{][\s]*/', '{', $css);
-        $css = preg_replace('/[\s]*[}][\s]*/', '}', $css); 
-                                                           
+        $css = preg_replace('/\\s*{\\s*/', '{', $css);
+        $css = preg_replace('/;?\\s*}\\s*/', '}', $css);
         
         // remove ws surrounding semicolons
         $css = preg_replace('/\\s*;\\s*/', ';', $css);
@@ -138,17 +136,17 @@ class Minify_CSS_Compressor {
         $css = preg_replace('/@import\\s+url/', '@import url', $css);
         
         // replace any ws involving newlines with a single newline
-        $css = preg_replace('/[ \\t]*\\n+\\s*/', "", $css);
+        $css = preg_replace('/[ \\t]*\\n+\\s*/', "\n", $css);
         
         // separate common descendent selectors w/ newlines (to limit line lengths)
-        // $css = preg_replace('/([\\w#\\.\\*]+)\\s+([\\w#\\.\\*]+){/', "$1\n$2{", $css);
+        $css = preg_replace('/([\\w#\\.\\*]+)\\s+([\\w#\\.\\*]+){/', "$1\n$2{", $css);
         
         // Use newline after 1st numeric value (to limit line lengths).
-        // $css = preg_replace('/
-        //     ((?:padding|margin|border|outline):\\d+(?:px|em)?) # 1 = prop : 1st numeric value
-        //     \\s+
-        //     /x'
-        //     ,"$1\n", $css);
+        $css = preg_replace('/
+            ((?:padding|margin|border|outline):\\d+(?:px|em)?) # 1 = prop : 1st numeric value
+            \\s+
+            /x'
+            ,"$1\n", $css);
         
         // prevent triggering IE6 bug: http://www.crankygeek.com/ie6pebug/
         $css = preg_replace('/:first-l(etter|ine)\\{/', ':first-l$1 {', $css);
