@@ -11,7 +11,7 @@
  */
 class Automin_upd {
 		
-	var $version        = '1.3.0'; 
+	var $version        = '1.4.0'; 
 	var $module_name = "Automin";
 	
     function Automin_upd($switch = TRUE) {
