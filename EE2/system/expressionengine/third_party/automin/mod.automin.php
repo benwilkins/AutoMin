@@ -45,7 +45,7 @@ class Automin {
 		// Load preferences
 		$this->arrPreferences = $this->EE->automin_model->GetAutoMinPreferences();
 		
-		$this->_template_log('AutoMin Module Loaded');
+		$this->_write_to_template_log('AutoMin Module Loaded');
 
 	}
 
@@ -57,34 +57,34 @@ class Automin {
 	 */
 	function less() {
 		
-		$this->_template_log('Processing LESS');
+		$this->_write_to_template_log('Processing LESS');
 		
-		$strTags = $this->_FetchEETagData();
+		$strTags = $this->_get_ee_tagdata();
 		
-		if ($this->_PreferenceValueForKey('automin_enabled') == 'y') {
+		if ($this->_preference_value_for_key('automin_enabled') == 'y') {
 			
-			if (!$this->_CheckForRequiredLibraries()) {
-				$this->_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
+			if (!$this->_check_for_required_libraries()) {
+				$this->_write_to_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
 				return $strTags;
 			}
 			
-			$strSource = $this->_ProcessEETagData($strTags, 'less');
+			$strSource = $this->_process_tag_data($strTags, 'less');
 			
 			if (!empty($this->strCacheFilename) && $strSource) {
 				
-				$this->_template_log('AutoMin was successful. Writing new tags to output.');
-				return sprintf('<link href="%s" %s>', $this->strCacheFilename, $this->_FetchTagParameters());
+				$this->_write_to_template_log('AutoMin was successful. Writing new tags to output.');
+				return sprintf('<link href="%s" %s>', $this->strCacheFilename, $this->_fetch_tag_parameters());
 				
 			} else {
 				
-				$this->_template_log('An error occurred. Your LESS code has not been compiled.');
+				$this->_write_to_template_log('An error occurred. Your LESS code has not been compiled.');
 				return $strTags;
 				
 			}
 			
 		} else {
 			
-			$this->_template_log('AutoMin not enabled. Returning original tag contents.');
+			$this->_write_to_template_log('AutoMin not enabled. Returning original tag contents.');
 			return $strTags;
 			
 		}
@@ -97,34 +97,34 @@ class Automin {
 	 */
 	function css() {
 		
-		$this->_template_log('Processing CSS');
+		$this->_write_to_template_log('Processing CSS');
 		
-		$strTags = $this->_FetchEETagData();
+		$strTags = $this->_get_ee_tagdata();
 		
-		if ($this->_PreferenceValueForKey('automin_enabled') == 'y') {
+		if ($this->_preference_value_for_key('automin_enabled') == 'y') {
 			
-			if (!$this->_CheckForRequiredLibraries()) {
-				$this->_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
+			if (!$this->_check_for_required_libraries()) {
+				$this->_write_to_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
 				return $strTags;
 			}
 			
-			$strSource = $this->_ProcessEETagData($strTags, 'css');
+			$strSource = $this->_process_tag_data($strTags, 'css');
 			
 			if (!empty($this->strCacheFilename) && $strSource) {
 				
-				$this->_template_log('AutoMin was successful. Writing new tags to output.');
-				return sprintf('<link href="%s" %s>', $this->strCacheFilename, $this->_FetchTagParameters());
+				$this->_write_to_template_log('AutoMin was successful. Writing new tags to output.');
+				return sprintf('<link href="%s" %s>', $this->strCacheFilename, $this->_fetch_tag_parameters());
 				
 			} else {
 				
-				$this->_template_log('An error occurred. Returning original tags for safety.');
+				$this->_write_to_template_log('An error occurred. Returning original tags for safety.');
 				return $strTags;
 				
 			}
 			
 		} else {
 			
-			$this->_template_log('AutoMin not enabled. Returning original tag contents.');
+			$this->_write_to_template_log('AutoMin not enabled. Returning original tag contents.');
 			return $strTags;
 			
 		}
@@ -139,34 +139,34 @@ class Automin {
 	 */
 	function js() {
 		
-		$this->_template_log('Processing JavaScript');
+		$this->_write_to_template_log('Processing JavaScript');
 		
-		$strTags = $this->_FetchEETagData();
+		$strTags = $this->_get_ee_tagdata();
 		
-		if ($this->_PreferenceValueForKey('automin_enabled') == 'y') {
+		if ($this->_preference_value_for_key('automin_enabled') == 'y') {
 			
-			if (!$this->_CheckForRequiredLibraries()) {
-				$this->_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
+			if (!$this->_check_for_required_libraries()) {
+				$this->_write_to_template_log('AutoMin dependencies are missing. Make sure you installed them correctly. The original tag data is being returned for safety.');
 				return $strTags;
 			}
 			
-			$strSource = $this->_ProcessEETagData($strTags, 'js');
+			$strSource = $this->_process_tag_data($strTags, 'js');
 			
 			if (!empty($this->strCacheFilename) && $strSource) {
 				
-				$this->_template_log('AutoMin was successful. Writing new tags to output.');
-				return sprintf('<script src="%s" %s></script>', $this->strCacheFilename, $this->_FetchTagParameters());
+				$this->_write_to_template_log('AutoMin was successful. Writing new tags to output.');
+				return sprintf('<script src="%s" %s></script>', $this->strCacheFilename, $this->_fetch_tag_parameters());
 				
 			} else {
 				
-				$this->_template_log('An error occurred. Returning original tags for safety.');
+				$this->_write_to_template_log('An error occurred. Returning original tags for safety.');
 				return $strTags;
 				
 			}
 			
 		} else {
 			
-			$this->_template_log('AutoMin not enabled. Returning original tag contents.');
+			$this->_write_to_template_log('AutoMin not enabled. Returning original tag contents.');
 			return $strTags;
 			
 		}
@@ -181,25 +181,25 @@ class Automin {
 	 * @return void
 	 * @author Jesse Bunch
 	 */
-	function _CheckForRequiredLibraries() {
+	function _check_for_required_libraries() {
 		
-		$this->_template_log('Checking for required libraries');
+		$this->_write_to_template_log('Checking for required libraries');
 		
 		// CSS Minifier
 		if (!class_exists('Minify_CSS_Compressor')) {
-			$this->_template_log('Minify_CSS_Compressor class was not loaded correctly.');
+			$this->_write_to_template_log('Minify_CSS_Compressor class was not loaded correctly.');
 			return FALSE;
 		}
 		
 		// JS Minifier
 		if (!class_exists('JSMin')) {
-			$this->_template_log('JSMin class was not loaded correctly.');
+			$this->_write_to_template_log('JSMin class was not loaded correctly.');
 			return FALSE;
 		}
 
 		// LESS Parser
 		if (!class_exists('lessc')) {
-			$this->_template_log('The LESS compiler class was not loaded correctly.');
+			$this->_write_to_template_log('The LESS compiler class was not loaded correctly.');
 			return FALSE;
 		}
 		
@@ -215,11 +215,11 @@ class Automin {
 	 * would output: <link href="%s" type="text/css" title="default">
 	 * @return void
 	 */
-	function _FetchTagParameters() {
+	function _fetch_tag_parameters() {
 		
-		$this->_template_log('Featching AutoMin tag parameters');
+		$this->_write_to_template_log('Featching AutoMin tag parameters');
 		
-		$arrTemplateParams = $this->_FetchEETagParams();
+		$arrTemplateParams = $this->_get_ee_tag_params();
 		
 		// Unset any parameters that shouldn't be sent to the
 		// final CSS / JS include HTML tag here
@@ -241,9 +241,9 @@ class Automin {
 	 * @param boolean $boolReturnSource If TRUE, will return the minfied source instead of the file path
 	 * @return string
 	 */
-	function _ProcessEETagData($strTags, $strType) {
+	function _process_tag_data($strTags, $strType) {
 		
-		$this->_template_log('Processing EE tag data');
+		$this->_write_to_template_log('Processing EE tag data');
 		
 		// -------------------------------------
 		//  Pre-Process EE Global Vars
@@ -272,40 +272,40 @@ class Automin {
 		$strCacheFilename = $strTagHash . ".$strFileType";
 		
 		// Construct the filepath to the cache
-		$strCacheFilePath = $this->_PreferenceValueForKey('cache_server_path') . $strCacheFilename;
-		$this->strCacheFilename = $this->_PreferenceValueForKey('cache_url') . $strCacheFilename;
+		$strCacheFilePath = $this->_preference_value_for_key('cache_server_path') . $strCacheFilename;
+		$this->strCacheFilename = $this->_preference_value_for_key('cache_url') . $strCacheFilename;
 		
 		// -------------------------------------
 		//  Extract the file names
 		// -------------------------------------
 		
-		$arrFilenames = $this->_ExtractFileNamesFromTagData($strTags, $strType);
+		$arrFilenames = $this->_extract_files_names_from_tag_data($strTags, $strType);
 		
 		if (count($arrFilenames) == 0) {
 			
-			$this->_template_log('ERROR: No file names were matched in the tags.');
+			$this->_write_to_template_log('ERROR: No file names were matched in the tags.');
 			return FALSE;
 			
 		}
 		
-		$intLatestModified = $this->_GetLatestModifiedFileTimestamp($arrFilenames);
+		$intLatestModified = $this->_get_latest_modified_timestamp_for_files_array($arrFilenames);
 		
 		// -------------------------------------
 		//  Is the cache valid?
 		// -------------------------------------
 
-		if (!$this->_IsCacheValid($strCacheFilePath, $intLatestModified)) {
+		if (!$this->_is_cache_valid($strCacheFilePath, $intLatestModified)) {
 
-			$this->_template_log('Cache isn\'t valid. Regenerating...');
+			$this->_write_to_template_log('Cache isn\'t valid. Regenerating...');
 			
-			$strData = $this->_RegenerateCacheFromFilenames($arrFilenames, $strType);
+			$strData = $this->_regenerate_cache_from_files($arrFilenames, $strType);
 			
 			if ($strData) {
 				
-				$this->_template_log('Writing source to cache');
+				$this->_write_to_template_log('Writing source to cache');
 				
-				if (!$this->_WriteStringToFile($strData, $strCacheFilePath)) {
-					$this->_template_log('An error occurred while trying to save the compiled source.');
+				if (!$this->_write_string_to_file($strData, $strCacheFilePath)) {
+					$this->_write_to_template_log('An error occurred while trying to save the compiled source.');
 					return FALSE;
 				} else {
 
@@ -315,7 +315,7 @@ class Automin {
 
 			} else {
 			
-				$this->_template_log('ERROR: Invalid data returned from cache generator');
+				$this->_write_to_template_log('ERROR: Invalid data returned from cache generator');
 				return FALSE;
 				
 			}
@@ -326,7 +326,7 @@ class Automin {
 			
 			// Append the latest modified time
 			$this->strCacheFilename .= '?modified=' . $intLatestModified;
-			$this->_template_log('Valid cache found. Returning cached data.');
+			$this->_write_to_template_log('Valid cache found. Returning cached data.');
 			return TRUE;
 		
 		}
@@ -342,9 +342,9 @@ class Automin {
 	 * @param string $strType 
 	 * @return array
 	 */
-	function _ExtractFileNamesFromTagData($strTagData, $strType) {
+	function _extract_files_names_from_tag_data($strTagData, $strType) {
 		
-		$this->_template_log('Attempting to extract file names from tag data');
+		$this->_write_to_template_log('Attempting to extract file names from tag data');
 		
 		$arrMatches = array();
 		
@@ -380,9 +380,9 @@ class Automin {
 		
 		}
 		
-		$this->_PrepFilenames($arrMatches[1]);
+		$this->_prep_filenames($arrMatches[1]);
 		
-		$this->_template_log(sprintf('Found %s filenames', count($arrMatches[1])));
+		$this->_write_to_template_log(sprintf('Found %s filenames', count($arrMatches[1])));
 		
 		return $arrMatches[1];
 		
@@ -397,11 +397,11 @@ class Automin {
 	 * @return void
 	 * @author Jesse Bunch
 	 */
-	function _PrepFilenames(&$arrFileNames) {
+	function _prep_filenames(&$arrFileNames) {
 		
-		$this->_template_log('Creating server root relative filenames');
+		$this->_write_to_template_log('Creating server root relative filenames');
 		
-		$strURL = $this->_GetCurrentURL();
+		$strURL = $this->_get_current_url();
 		
 		foreach($arrFileNames as &$strFileName) {
 			
@@ -427,9 +427,9 @@ class Automin {
 	 * @return string The new file data with @imports parsed
 	 * @author Jesse Bunch
 	 */
-	function _ProcessCSSImportsInString($strFileData) {
+	function _process_css_imports_in_string($strFileData) {
 		
-		$this->_template_log('Looking for CSS @imports');
+		$this->_write_to_template_log('Looking for CSS @imports');
 		
 		$arrMatches = array();
 		preg_match_all('/\@import\surl\([\'\"]{1}([A-Za-z0-9\.\/\_\-]+)[\'\"]{1}\)[;]?/', $strFileData, $arrMatches);
@@ -440,14 +440,14 @@ class Automin {
 		
 		if (count($arrFileNames)) {
 			
-			$this->_template_log('Found @imports. Processing...');
+			$this->_write_to_template_log('Found @imports. Processing...');
 			
-			$this->_PrepFilenames($arrFileNames);
+			$this->_prep_filenames($arrFileNames);
 
 			foreach($arrFileNames as $strFilename) {
 
 				// Read the file
-				$strData = $this->_ReadFile($strFilename);
+				$strData = $this->_read_file($strFilename);
 
 				// If we have data, replace the @import
 				if ($strData) {
@@ -460,7 +460,7 @@ class Automin {
 			
 		} else {
 			
-			$this->_template_log('No @imports were found');
+			$this->_write_to_template_log('No @imports were found');
 			
 		}
 		
@@ -475,9 +475,9 @@ class Automin {
 	 * @param array $arrFilenames 
 	 * @return int
 	 */
-	function _GetLatestModifiedFileTimestamp($arrFilenames) {
+	function _get_latest_modified_timestamp_for_files_array($arrFilenames) {
 		
-		$this->_template_log('Getting the most recently modified file\'s modification timestamp.');
+		$this->_write_to_template_log('Getting the most recently modified file\'s modification timestamp.');
 		
 		$intLastModified = 0;
 		
@@ -510,39 +510,39 @@ class Automin {
 	 * @param string $strFilename 
 	 * @return boolean
 	 */
-	function _WriteStringToFile($strData, $strFilePath) {
+	function _write_string_to_file($strData, $strFilePath) {
 		
-		$this->_template_log(sprintf('Attempting to write to file: %s', $strFilePath));
+		$this->_write_to_template_log(sprintf('Attempting to write to file: %s', $strFilePath));
 		
 		if (empty($strData)) {
-			$this->_template_log('ERROR: No data to write');
+			$this->_write_to_template_log('ERROR: No data to write');
 			return FALSE;
 		}
 		
-		if (!is_dir($this->_PreferenceValueForKey('cache_server_path'))) {
+		if (!is_dir($this->_preference_value_for_key('cache_server_path'))) {
 			
-			$this->_template_log('Attempting to create cache directory');
+			$this->_write_to_template_log('Attempting to create cache directory');
 			
-			if (!@mkdir($this->_PreferenceValueForKey('cache_server_path'), 0777)) {
+			if (!@mkdir($this->_preference_value_for_key('cache_server_path'), 0777)) {
 				
-				$this->_template_log('Unable to create the cache directory');
+				$this->_write_to_template_log('Unable to create the cache directory');
 				return FALSE;
 				
 			}
 			
-			$this->_template_log('Cache directory created successfully. Making it writable.');
-			@chmod($this->_PreferenceValueForKey('cache_server_path'), 0777);
+			$this->_write_to_template_log('Cache directory created successfully. Making it writable.');
+			@chmod($this->_preference_value_for_key('cache_server_path'), 0777);
 			
 		}
 		
 		if (file_put_contents($strFilePath, $strData, LOCK_EX) === FALSE) {
 			
-			$this->_template_log('Unable to write to file.');
+			$this->_write_to_template_log('Unable to write to file.');
 			return FALSE;
 			
 		} else {
 			
-			$this->_template_log('File write was successful. Setting permissions just in case.');
+			$this->_write_to_template_log('File write was successful. Setting permissions just in case.');
 			@chmod($strFilePath, 0777);
 			
 			return TRUE;
@@ -560,19 +560,19 @@ class Automin {
 	 * @param string $strCacheFilePath Full server path to the cache file
 	 * @param string $intLatestModified UNIX Timestamp. To return TRUE, the cache file's modified
 	 * 									timestamp must be after ths value to indicate it's not out of date.
-	 * @return boolean
+	 * @return boolean`
 	 */
-	function _IsCacheValid($strCacheFilePath, $intLatestModified) {
+	function _is_cache_valid($strCacheFilePath, $intLatestModified) {
 		
 		// Caching disabled?
-		if ($this->_PreferenceValueForKey('cache_enabled') == 'n') {
-			$this->_template_log('Caching disabled in preferences. Therefore cache is invalid.');
+		if ($this->_preference_value_for_key('cache_enabled') == 'n') {
+			$this->_write_to_template_log('Caching disabled in preferences. Therefore cache is invalid.');
 			return FALSE;
 		}
 		
-		if (!@is_dir($this->_PreferenceValueForKey('cache_server_path'))) {
+		if (!@is_dir($this->_preference_value_for_key('cache_server_path'))) {
 			
-			$this->_template_log('ERROR: Cache directory doesn\'t exist. Therefore the cache is invalid.');
+			$this->_write_to_template_log('ERROR: Cache directory doesn\'t exist. Therefore the cache is invalid.');
 			
 			return FALSE;
 			
@@ -580,24 +580,24 @@ class Automin {
 			
 			if (!@is_readable($strCacheFilePath)) {
 				
-				$this->_template_log('ERROR: The cache file isn\'t readable');
+				$this->_write_to_template_log('ERROR: The cache file isn\'t readable');
 			
 				return FALSE;
 				
 			} else {
 				
-				$this->_template_log('Cache file found and is readable. Validating...');
+				$this->_write_to_template_log('Cache file found and is readable. Validating...');
 				
 				$intCacheModified = @filemtime($strCacheFilePath);
 				
 				if ($intCacheModified !== FALSE && $intCacheModified >= $intLatestModified) {
 					
-					$this->_template_log('Cache is newer than the latest file modification. All is good.');
+					$this->_write_to_template_log('Cache is newer than the latest file modification. All is good.');
 					return TRUE;
 					
 				} else {
 					
-					$this->_template_log('Cache is out of date.');
+					$this->_write_to_template_log('Cache is out of date.');
 					return FALSE;
 					
 				}
@@ -615,9 +615,9 @@ class Automin {
 	 * @param string $strFilename 
 	 * @return string
 	 */
-	public function _ReadFile($strFilename) {
+	public function _read_file($strFilename) {
 		
-		$this->_template_log(sprintf('Attempting to read file: %s', $strFilename));
+		$this->_write_to_template_log(sprintf('Attempting to read file: %s', $strFilename));
 		return @file_get_contents($strFilename);
 		
 	}
@@ -630,15 +630,15 @@ class Automin {
 	 * @param string $strType 
 	 * @return string
 	 */
-	public function _CombineFileDataInFiles($arrFilenames, $strType) {
+	public function _combine_data_in_files($arrFilenames, $strType) {
 		
-		$this->_template_log(sprintf('Attempting to combine %s files', count($arrFilenames)));
+		$this->_write_to_template_log(sprintf('Attempting to combine %s files', count($arrFilenames)));
 		
 		$strReturnData = '';
 		
 		foreach($arrFilenames as $strFilename) {
 		
-			$strFileData = $this->_ReadFile($strFilename);
+			$strFileData = $this->_read_file($strFilename);
 			
 			if ($strFileData) {
 			
@@ -646,7 +646,7 @@ class Automin {
 				
 			} else {
 				
-				$this->_template_log('File was empty.');
+				$this->_write_to_template_log('File was empty.');
 				
 			}
 		
@@ -654,7 +654,7 @@ class Automin {
 		
 		// if CSS, we need to check for @imports
 		if ($strType == 'css') {
-			$strReturnData = $this->_ProcessCSSImportsInString($strReturnData);
+			$strReturnData = $this->_process_css_imports_in_string($strReturnData);
 		}
 		
 		return $strReturnData;
@@ -669,9 +669,9 @@ class Automin {
 	 * @param string $strType Either 'css' or 'js' - Determines the minifier used
 	 * @return string
 	 */
-	public function _RegenerateCacheFromFilenames($arrFilenames, $strType) {
+	public function _regenerate_cache_from_files($arrFilenames, $strType) {
 		
-		$this->_template_log('Attempting to regenerate the cache');
+		$this->_write_to_template_log('Attempting to regenerate the cache');
 		
 		@ini_set("memory_limit","12M");
 		@ini_set("memory_limit","16M");
@@ -681,11 +681,11 @@ class Automin {
 		@ini_set("memory_limit","256M");
 		
 		$strDataToReturn = '';
-		$strDataToReturn = $this->_CombineFileDataInFiles($arrFilenames, $strType);
+		$strDataToReturn = $this->_combine_data_in_files($arrFilenames, $strType);
 		
 		if ($strDataToReturn === FALSE) {
 			
-			$this->_template_log('ERROR: No data was returned after combining the files.');
+			$this->_write_to_template_log('ERROR: No data was returned after combining the files.');
 			return FALSE;
 			
 		}
@@ -694,23 +694,23 @@ class Automin {
 
 			case 'less':
 			
-				$this->_template_log('Compiling LESS');
+				$this->_write_to_template_log('Compiling LESS');
 				$intOldSize = strlen($strDataToReturn);
 				$objLess = new lessc();
 
 				try {
 					$strDataToReturn = $objLess->parse($strDataToReturn);		
 				} catch (Exception $e) {
-					$this->_template_log('LESS compilation failed with error: ' . $e->getMessage());
+					$this->_write_to_template_log('LESS compilation failed with error: ' . $e->getMessage());
 					return FALSE;
 				}
 				
-				$this->_template_log('Compressing CSS returned from LESS compiler');
+				$this->_write_to_template_log('Compressing CSS returned from LESS compiler');
 				$strDataToReturn = Minify_CSS_Compressor::process($strDataToReturn);
 
 				$intNewSize = strlen($strDataToReturn);
 				
-				$this->_template_log(sprintf('Compilation has finished. %s bytes became %s bytes or a %s%% savings', $intOldSize, $intNewSize, (($intNewSize/$intOldSize) * 100)));
+				$this->_write_to_template_log(sprintf('Compilation has finished. %s bytes became %s bytes or a %s%% savings', $intOldSize, $intNewSize, (($intNewSize/$intOldSize) * 100)));
 				
 				return $strDataToReturn;
 			
@@ -720,13 +720,13 @@ class Automin {
 		
 			case 'css':
 			
-				$this->_template_log('Compressing CSS');
+				$this->_write_to_template_log('Compressing CSS');
 				
 				$intOldSize = strlen($strDataToReturn);
 				$strDataToReturn = Minify_CSS_Compressor::process($strDataToReturn);
 				$intNewSize = strlen($strDataToReturn);
 				
-				$this->_template_log(sprintf('Compression finished. %s bytes became %s bytes or a %s%% savings', $intOldSize, $intNewSize, (($intNewSize/$intOldSize) * 100)));
+				$this->_write_to_template_log(sprintf('Compression finished. %s bytes became %s bytes or a %s%% savings', $intOldSize, $intNewSize, (($intNewSize/$intOldSize) * 100)));
 				
 				return $strDataToReturn;
 			
@@ -736,13 +736,13 @@ class Automin {
 			
 			case 'js':
 				
-				$this->_template_log('Compressing JavaScript');
+				$this->_write_to_template_log('Compressing JavaScript');
 				
 				$intOldSize = strlen($strDataToReturn);
 				$strDataToReturn = JSMin::minify($strDataToReturn);
 				$intNewSize = strlen($strDataToReturn);
 				
-				$this->_template_log(sprintf('Compression finished. %s bytes became %s bytes or a %s%% savings', $intOldSize, $intNewSize, (($intNewSize/$intOldSize) * 100)));
+				$this->_write_to_template_log(sprintf('Compression finished. %s bytes became %s bytes or a %s%% savings', $intOldSize, $intNewSize, (($intNewSize/$intOldSize) * 100)));
 				
 				return $strDataToReturn;
 			
@@ -752,7 +752,7 @@ class Automin {
 			
 			default:
 			
-				$this->_template_log('ERROR: Invalid compression type specified.');
+				$this->_write_to_template_log('ERROR: Invalid compression type specified.');
 				return FALSE;
 				
 			break;
@@ -769,9 +769,9 @@ class Automin {
 	 * @return string
 	 * @author Jesse Bunch
 	 */
-	function _FetchEETagData() {
+	function _get_ee_tagdata() {
 		
-		$this->_template_log('Attempting to fetch EE tagdata');
+		$this->_write_to_template_log('Attempting to fetch EE tagdata');
 		
 		$strTags = $this->EE->TMPL->tagdata;
 		
@@ -787,9 +787,9 @@ class Automin {
 	 * @return array
 	 * @author Jesse Bunch
 	 */
-	function _FetchEETagParams() {
+	function _get_ee_tag_params() {
 		
-		$this->_template_log('Fetching EE tag params.');
+		$this->_write_to_template_log('Fetching EE tag params.');
 		
 		$arrTags = array();
 		
@@ -801,7 +801,7 @@ class Automin {
 	
 	// ---------------------------------------------------------------------
 	
-	function _GetCurrentURL($boolIncludeURI = FALSE) {
+	function _get_current_url($boolIncludeURI = FALSE) {
 			
 		$strURL = 'http';
 
@@ -839,7 +839,7 @@ class Automin {
 	 * @return string
 	 * @author Jesse Bunch
 	*/
-	function _PreferenceValueForKey($strKey) {
+	function _preference_value_for_key($strKey) {
 		
 		$strReturnValue = FALSE;
 
@@ -863,7 +863,7 @@ class Automin {
 	/**
 	 * Helper funciton for template logging
 	 */	
-	function _template_log($strMessage) {
+	function _write_to_template_log($strMessage) {
 		
 		$this->EE->TMPL->log_item("AutoMin Module: $strMessage");	
 			
