@@ -432,7 +432,7 @@ class Automin {
 		$this->_write_to_template_log('Looking for CSS @imports');
 		
 		$arrMatches = array();
-		preg_match_all('/\@import\surl\([\'\"]{1}([A-Za-z0-9\.\/\_\-]+)[\'\"]{1}\)[;]?/', $strFileData, $arrMatches);
+		preg_match_all('/\@import\s[url\(]?[\'\"]{1}([A-Za-z0-9\.\/\_\-]+)[\'\"]{1}[\)]?[;]?/', $strFileData, $arrMatches);
 		
 		$arrLines = $arrMatches[0];
 		$arrFileNames = $arrMatches[1];
