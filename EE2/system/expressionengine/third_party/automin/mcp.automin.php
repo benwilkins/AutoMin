@@ -1,89 +1,59 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
- * Automatic CSS/JavaScript combination, minification and caching for ExpressionEngine.
+ * ExpressionEngine - by EllisLab
  *
- * @package		Automin
- * @subpackage	ThirdParty
- * @category	Modules
- * @author		Jesse Bunch
- * @link		http://code.getbunch.com/automin/source
+ * @package		ExpressionEngine
+ * @author		ExpressionEngine Dev Team
+ * @copyright	Copyright (c) 2003 - 2011, EllisLab, Inc.
+ * @license		http://expressionengine.com/user_guide/license.html
+ * @link		http://expressionengine.com
+ * @since		Version 2.0
+ * @filesource
  */
+ 
+// ------------------------------------------------------------------------
+
+/**
+ * AutoMin Module Control Panel File
+ *
+ * @package		ExpressionEngine
+ * @subpackage	Addons
+ * @category	Module
+ * @author		Jesse Bunch
+ * @link		http://getbunch.com/
+ */
+
 class Automin_mcp {
 	
-	var $strBase;			// the strBase url for this module			
-	var $strFormBase;		// strBase url for forms
-	var $module_name = "automin";
-	var $strMessage;
-
-	// ---------------------------------------------------------------------
-
-	function Automin_mcp($switch = TRUE) {
-		
-		// Make a local reference to the ExpressionEngine super object
-		$this->EE =& get_instance(); 
-		$this->strBase	 	 = BASE.AMP.'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->module_name;
-		$this->strFormBase = 'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module='.$this->module_name;
-		
-		// Initialize helpers
-		$this->EE->load->library('table');
-		$this->EE->load->library('javascript');
-		$this->EE->load->helper('form');
-		
-		// Initialize Model
-		$this->EE->load->library('automin_model');
-			
-	}
+	public $return_data;
+	private $_base_url;
+	private $_form_url;
 	
-	// ---------------------------------------------------------------------
+	/**
+	 * Constructor
+	 * @author Jesse Bunch
+	*/
+	public function __construct() {
 
-	function index() {
+		$this->EE =& get_instance();
 		
-		$arrVars = array();
-		$arrVars['arrSettings'] = $this->EE->automin_model->GetAutoMinPreferences();
-		return $this->LoadView('preferences', 'automin_preferences', $arrVars);
-		
-	}
-	
-	// ---------------------------------------------------------------------
-	
-	function SetPreferences_Submit() {
-		
-		$arrData = $this->EE->input->post('data');
-		
-		if (is_array($arrData)) {
-			
-			$this->EE->automin_model->SetAutoMinPreferences($arrData);
-			
-		}
-		
-		$this->strMessage = lang('preferences_saved');
-		
-		return $this->index();
-		
+		$this->_base_url = BASE.AMP.'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module=automin';
+		$this->_form_url = 'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module=automin';
+
+		$this->EE->load->model('automin_model');
+		$this->version = $this->EE->automin_model->version;
+
 	}
 
-	// ---------------------------------------------------------------------
-	
-	function LoadView($strContentView, $strLangKey, $arrVars = array()) {
-		
-		$arrVars['_strContentView'] = $strContentView;
-		$arrVars['_strBase'] = $this->strBase;
-		$arrVars['_strFormBase'] = $this->strFormBase;
-		
-		$arrVars['_strMessage'] = $this->strMessage;
-		$this->strMessage = '';
-		
-		$this->EE->cp->set_variable('cp_page_title', lang($strLangKey));
-		$this->EE->cp->set_breadcrumb($this->strBase, lang('automin_module_name'));
-
-		return $this->EE->load->view('_wrapper', $arrVars, TRUE);
-		
+	/**
+	 * Module settings page
+	 * @return void
+	 */
+	public function index() {
+		$this->EE->cp->set_variable('cp_page_title', lang('automin_module_name'));
 	}
-	
-	// ---------------------------------------------------------------------
 	
 }
-
-/* End of file mcp.automin.php */ 
-/* Location: ./system/expressionengine/third_party/automin/mcp.automin.php */
+/* End of file mcp.automin.php */
+/* Location: /system/expressionengine/third_party/automin/mcp.automin.php */
