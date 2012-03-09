@@ -51,7 +51,13 @@ class Automin_mcp {
 	 * @return void
 	 */
 	public function index() {
+
 		$this->EE->cp->set_variable('cp_page_title', lang('automin_module_name'));
+
+		return $this->EE->load->view('settings', array(
+
+		), TRUE);
+
 	}
 	
 }
