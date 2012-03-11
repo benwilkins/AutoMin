@@ -40,14 +40,14 @@ class Automin_model {
 	}
 
 	/**
-	 * Retrieves an array of AutoMin's settings
+	 * Retrieves an array of AutoMin's settings for the current site
 	 * @return array
 	 * @author Jesse Bunch
 	*/
 	public function get_settings() {
 
 		$settings_result = $this->EE->db->limit(1)
-			->where('site_id', $this->config->item('site_id'))
+			->where('site_id', $this->EE->config->item('site_id'))
 			->get('automin_preferences');
 
 		return $settings_result->row_array();
@@ -55,14 +55,30 @@ class Automin_model {
 	}
 
 	/**
-	 * Updates AutoMin settings
+	 * Creates or Updates AutoMin settings for the current site
 	 * @param array $settings_array
 	 * @return TRUE
 	 * @author Jesse Bunch
 	*/
 	public function set_settings($settings_array) {
-		
+	
+		// Settings exist?
+		$current_settings = $this->get_settings();
 
+		// Create or update the settings for this site
+		if (empty($current_settings)) {
+			
+			$settings_array['site_id'] = $this->EE->config->item('site_id');
+			$settings_result = $this->EE->db->insert('automin_preferences', $settings_array);
+
+		} else {
+			$settings_result = $this->EE->db->limit(1)
+				->where('site_id', $this->EE->config->item('site_id'))
+				->update('automin_preferences', $settings_array);
+
+		}
+
+		return TRUE;
 
 	}
 

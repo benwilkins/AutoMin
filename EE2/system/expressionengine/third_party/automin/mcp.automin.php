@@ -55,8 +55,29 @@ class Automin_mcp {
 		$this->EE->cp->set_variable('cp_page_title', lang('automin_module_name'));
 
 		return $this->EE->load->view('settings', array(
-
+			'form_action' => $this->_form_url.AMP.'method=index_submit',
+			'automin_settings' => $this->EE->automin_model->get_settings()
 		), TRUE);
+
+	}
+
+	public function index_submit() {
+		
+		$settings_array = array(
+			'automin_enabled' => $this->EE->input->post('automin_enabled'),
+			'caching_enabled' => $this->EE->input->post('caching_enabled'),
+			'compress_html' => $this->EE->input->post('compress_html'),
+			'cache_path' => $this->EE->input->post('cache_path'),
+			'cache_url' => $this->EE->input->post('cache_url'),
+		);
+		
+		$this->EE->automin_model->set_settings($settings_array);
+		$this->EE->session->set_flashdata(
+			'message_success', 
+			lang('settings_updated_successfully')
+		);
+
+		$this->EE->functions->redirect($this->_base_url);
 
 	}
 	
