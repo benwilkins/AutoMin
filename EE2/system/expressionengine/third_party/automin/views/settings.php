@@ -13,50 +13,91 @@
 			<tr class="even">
 				<td width="33%">
 					<strong>AutoMin Enabled?</strong><br>
-					<small>Will disable all AutoMin functions.</small>
+					<small>
+						Will disable all AutoMin functions.<br>
+						Config Key: automin_automin_enabled<br>
+						Config Value: 'y' or 'n'
+					</small>
 				</td>
 				<td>
-					<?= form_dropdown('automin_enabled', array('No', 'Yes'), @$automin_settings['automin_enabled']) ?>
+					<?= form_dropdown(
+							'automin_enabled', 
+							array('n' => 'No', 'y' => 'Yes'), 
+							@$automin_settings['automin_enabled']
+						) 
+					?>
 				</td>
 			</tr>
 
 			<tr class="even">
 				<td width="33%">
 					<strong>Caching Enabled?</strong><br>
-					<small>Useful in development.</small>
+					<small>
+						Useful in development.<br>
+						Config Key: automin_caching_enabled<br>
+						Config Value: 'y' or 'n'
+					</small>
 				</td>
 				<td>
-					<?= form_dropdown('caching_enabled', array('No', 'Yes'), @$automin_settings['caching_enabled']) ?>
+					<?= form_dropdown(
+							'caching_enabled', 
+							array('n' => 'No', 'y' => 'Yes'), 
+							@$automin_settings['caching_enabled']
+						) 
+					?>
 				</td>
 			</tr>
 
 			<tr class="even">
 				<td width="33%">
 					<strong>Compress HTML Markup?</strong><br>
-					<small>Compresses your template output.</small>
+					<small>
+						Compresses your template output.<br>
+						Config Key: automin_compress_html<br>
+						Config Value: 'y' or 'n'
+					</small>
 				</td>
 				<td>
-					<?= form_dropdown('compress_html', array('No', 'Yes'), @$automin_settings['compress_html']) ?>
+					<?= form_dropdown(
+							'compress_html', 
+							array('n' => 'No', 'y' => 'Yes'), 
+							@$automin_settings['compress_html']
+						)
+					?>
 				</td>
 			</tr>
 
 			<tr class="odd">
 				<td width="33%">
 					<strong>Path to Cache Directory</strong><br>
-					<small>Something like, /var/www/vhosts/domain.com/httpdocs/automin/</small>
+					<small>
+						Something like, /var/www/vhosts/domain.com/httpdocs/automin/<br>
+						Config Key: automin_cache_path
+					</small>
 				</td>
 				<td>
-					<?=form_input(array('type' => 'text', 'name' => 'cache_path'), @$automin_settings['cache_path'])?>
+					<?=form_input(
+							array('type' => 'text', 'name' => 'cache_path'), 
+							@$automin_settings['cache_path']
+						)
+					?>
 				</td>
 			</tr>
 
 			<tr class="odd">
 				<td width="33%">
 					<strong>URL to Cache Directory</strong><br>
-					<small>Something like, /automin/</small>
+					<small>
+						Something like, /automin/<br>
+						Config Key: automin_cache_url
+					</small>
 				</td>
 				<td>
-					<?=form_input(array('type' => 'text', 'name' => 'cache_url'), @$automin_settings['cache_url'])?>
+					<?=form_input(
+							array('type' => 'text', 'name' => 'cache_url'), 
+							@$automin_settings['cache_url']
+						)
+					?>
 				</td>
 			</tr>
 

@@ -40,17 +40,84 @@ class Automin_model {
 	}
 
 	/**
+	 * Returns the AutoMin cache path for the current site
+	 * @author Jesse Bunch
+	 * @return string
+	*/
+	public function get_cache_path() {
+		$settings_array = $this->get_settings();
+		return $settings_array['cache_path'];
+	}
+
+	/**
+	 * Returns the AutoMin cache URL for the current site
+	 * @author Jesse Bunch
+	 * @return string
+	*/
+	public function get_cache_url() {
+		$settings_array = $this->get_settings();
+		return $settings_array['cache_url'];
+	}
+
+	/**
+	 * Is AutoMin enabled?
+	 * @author Jesse Bunch
+	 * @return bool
+	*/
+	public function is_automin_enabled() {
+		$settings_array = $this->get_settings();
+		return ($settings_array['automin_enabled'] == 'y');
+	}
+
+	/**
+	 * Should we cache AutoMin results?
+	 * @author Jesse Bunch
+	 * @return bool
+	*/
+	public function is_caching_enabled() {
+		$settings_array = $this->get_settings();
+		return ($settings_array['caching_enabled'] == 'y');
+	}
+
+	/**
+	 * Should we compress HTML markup?
+	 * @author Jesse Bunch
+	 * @return bool
+	*/
+	public function should_compress_markup() {
+		$settings_array = $this->get_settings();
+		return ($settings_array['compress_html'] == 'y');
+	}
+
+	/**
 	 * Retrieves an array of AutoMin's settings for the current site
 	 * @return array
 	 * @author Jesse Bunch
 	*/
 	public function get_settings() {
 
-		$settings_result = $this->EE->db->limit(1)
-			->where('site_id', $this->EE->config->item('site_id'))
-			->get('automin_preferences');
+		static $settings_array;
 
-		return $settings_result->row_array();
+		// No sense in querying for settings
+		// more than once per request.
+		if (!$settings_array) {
+
+			// Fetch settings stored in the DB
+			$settings_result = $this->EE->db->limit(1)
+				->where('site_id', $this->EE->config->item('site_id'))
+				->get('automin_preferences');
+			$settings_array = $settings_result->row_array();
+
+			// Overwrite with config values
+			foreach($settings_array as $key=>$value) {
+				if ($this->EE->config->item("automin_$key")) {
+					$settings_array[$key] = $this->EE->config->item("automin_$key");
+				}
+			}
+
+		}
+
+		return $settings_array;
 
 	}
 

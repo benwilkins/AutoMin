@@ -79,10 +79,41 @@ class Automin_ext {
 		
 		$final_string = $template_string;
 
+		// AutoMin model
+		$this->EE->load->model('automin_model');
+
 		// Prior output?
 		if (isset($this->EE->extensions->last_call) 
 			&& $this->EE->extensions->last_call) {
 			$final_string = $this->EE->extensions->last_call;
+		}
+		
+		// Is HTML minifcation disabled?
+		if (!$this->EE->automin_model->should_compress_markup()) {
+			return $final_string;
+		}
+
+		// Minify
+		if (!$is_embed) {
+
+			// Minify
+			$data_length_before = strlen($final_string) / 1024;
+			require_once('libraries/class.html.min.php');
+			$final_string = Minify_HTML::minify($final_string);
+			$data_length_after = strlen($final_string) / 1024;
+			
+			// Log results
+			$data_savings_kb = $data_length_before - $data_length_after;
+			$data_savings_percent = $data_savings_kb / $data_length_before;
+			$data_savings_message = sprintf(
+				'AutoMin Module HTML Compression: Before: %1.0fkb / After: %1.0fkb / Data reduced by %1.2fkb or %1.2f%%',
+				$data_length_before,
+				$data_length_after,
+				$data_savings_kb,
+				$data_savings_percent
+			);
+			$this->EE->TMPL->log_item($data_savings_message);
+
 		}
 
 		return $final_string;

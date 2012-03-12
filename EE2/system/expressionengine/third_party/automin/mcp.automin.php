@@ -70,7 +70,8 @@ class Automin_mcp {
 			'cache_path' => $this->EE->input->post('cache_path'),
 			'cache_url' => $this->EE->input->post('cache_url'),
 		);
-		
+
+		// Update
 		$this->EE->automin_model->set_settings($settings_array);
 		$this->EE->session->set_flashdata(
 			'message_success', 
