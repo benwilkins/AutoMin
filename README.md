@@ -69,7 +69,7 @@ Installation (EE 2.X)
 2. Create the AutoMin cache directory somewhere below your document root. Make sure it is writable by Apache (most of the time this means giving the folder 777 permissions). I usually create a folder called `automin` just inside my `public_html` or `httpdocs` directory.
 3. In EE, navigate to Addons->Modules. Click install next to AutoMin. If you'd like to compress your HTML, install the extension as well.
 4. In the settings page for AutoMin, enter the server path and url to your AutoMin cache directory. Be sure to enable AutoMin and caching. All of these options may be overridden in your config file.
-5. Add the AutoMin template tags to your ExpressionEngine templates. I recommend that you either (a) separate your CSS and JS into an embed template that isn't cached or (b) separate your CSS and JS into a snippet. This is to prevent EE from caching AutoMin's output, which can prevent AutoMin from noticing when you change your source code.
+5. Add the AutoMin template tags to your ExpressionEngine templates. I recommend that you either separate your CSS and JS into an embed template that isn't cached as it will prevent EE from caching AutoMin's output, which can prevent AutoMin from noticing when you change your source code.
 6. Refresh your site. If all goes well, you'll see your CSS and JS code combined and compressed. See the template debugger for error messages. Note: the first page load after changing your source files or the AutoMin template tags could take longer than usual while your code is compressed.
 
 Example Usage
