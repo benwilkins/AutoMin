@@ -110,7 +110,11 @@ class Automin {
 		$filename_array = $this->_extract_filenames($markup, $markup_type);
 		$filename_array = $this->_prep_filenames($filename_array);
 		$last_modified = $this->_find_last_modified_timestamp($filename_array);
-		$cache_key = $this->EE->caching_library->get_cache_key($markup, $markup_type);
+
+		// File Extension
+		// LESS files should have a .css extension
+		$extension = ($markup_type == self::MARKUP_TYPE_LESS) ? self::MARKUP_TYPE_CSS : $markup_type;
+		$cache_key = $this->EE->caching_library->get_cache_key($markup, $extension);
 
 		// Fetch and validate cache
 		$cache_filename = $this->EE->caching_library->fetch_cache(
