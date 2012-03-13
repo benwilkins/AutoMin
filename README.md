@@ -4,6 +4,10 @@ AutoMin is an ExpressionEngine module and extension that automates the combinati
 
 AutoMin is smart enough to know when you've changed your source files and will automatically regnerate it's cache when appropriate.
 
+For support, please file a bug report or feature request at the AutoMin repository on Github: https://github.com/bunchjesse/AutoMin/issues
+
+Please note: I work on AutoMin in my spare time so I may not be able to address your issues right away. This is why AutoMin is free. The code is well organized and documented so feel free to poke around the and submit pull requests for any improvements you make.
+
 Special Thanks
 ---
 Thanks to the minify project for their CSS compressor and the JSMin project for their JavaScript minifiaction class. Also, thanks goes to leafo for the PHP LESS processor. I've tried to develop this plugin in a clean and pragmatic fasion to make it easy for you to modify, should modification be necessary to work with your setup.
@@ -11,10 +15,6 @@ Thanks to the minify project for their CSS compressor and the JSMin project for 
  - Minify: http://code.google.com/p/minify/
  - JSMin: http://www.crockford.com/javascript/jsmin.html
  - LESS for PHP: http://leafo.net/lessphp/
-
-For support, please file a bug report or feature request at the AutoMin repository on Github: https://github.com/bunchjesse/AutoMin/issues
-
-Please note: I work on AutoMin in my spare time so I may not be able to address your issues right away. This is why AutoMin is free. The code is well organized and documented so feel free to poke around the and submit pull requests for any improvements you make.
 
 Changelog
 ---
