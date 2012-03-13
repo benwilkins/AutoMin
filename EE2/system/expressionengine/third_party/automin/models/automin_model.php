@@ -122,13 +122,19 @@ class Automin_model {
 			}
 
 			// Legacy 'automin_cache_enabled'
-			$settings_array['caching_enabled'] = ($this->EE->config->item('automin_cache_enabled')) ?: $settings_array['caching_enabled'];
+			$settings_array['caching_enabled'] = ($this->EE->config->item('automin_cache_enabled')) 
+				? $this->EE->config->item('automin_cache_enabled')
+				: $settings_array['caching_enabled'];
 
 			// Legacy 'automin_compress_markup'
-			$settings_array['compress_html'] = ($this->EE->config->item('automin_compress_markup')) ?: $settings_array['compress_html'];
+			$settings_array['compress_html'] = ($this->EE->config->item('automin_compress_markup')) 
+				? $this->EE->config->item('automin_compress_markup')
+				: $settings_array['compress_html'];
 
 			// Legacy 'automin_cache_server_path'
-			$settings_array['cache_path'] = ($this->EE->config->item('automin_cache_server_path')) ?: $settings_array['cache_path'];
+			$settings_array['cache_path'] = ($this->EE->config->item('automin_cache_server_path')) 
+				? $this->EE->config->item('automin_cache_server_path')
+				: $settings_array['cache_path'];
 
 
 
