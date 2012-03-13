@@ -2,7 +2,7 @@ Introduction
 ---
 AutoMin is an ExpressionEngine module and extension that automates the combination and compression of your source files and currently supports CSS, JavaScript, LESS, and HTML compression.
 
-AutoMin is smart enough to know when you've changed your source files and will automatically regnerate it's cache when appropriate.
+AutoMin is smart enough to know when you've changed your source files and will automatically regenerate it's cache when appropriate.
 
 For support, please file a bug report or feature request at the AutoMin repository on Github: https://github.com/bunchjesse/AutoMin/issues
 
