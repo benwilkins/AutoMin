@@ -42,7 +42,6 @@ class Automin_mcp {
 		$this->_form_url = 'C=addons_modules'.AMP.'M=show_module_cp'.AMP.'module=automin';
 
 		$this->EE->load->model('automin_model');
-		$this->version = $this->EE->automin_model->version;
 
 	}
 

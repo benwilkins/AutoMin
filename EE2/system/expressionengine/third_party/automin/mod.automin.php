@@ -40,6 +40,7 @@ class Automin {
 	*/
 	const MARKUP_TYPE_JS = 'js';
 	const MARKUP_TYPE_CSS = 'css';
+	const MARKUP_TYPE_LESS = 'less';
 	
 	/**
 	 * Constructor
@@ -50,7 +51,6 @@ class Automin {
 		$this->EE->load->model('automin_model');
 		$this->EE->load->library('minification_library');
 		$this->EE->load->library('caching_library');
-		$this->version = $this->EE->automin_model->version;
 	}
 	
 	/**
@@ -60,7 +60,7 @@ class Automin {
 	*/
 	public function css() {
 		$this->_write_log('Processing CSS/LESS');
-		return $this->_process_markup(
+		return $this->return_data = $this->_process_markup(
 			$this->EE->TMPL->tagdata,
 			self::MARKUP_TYPE_CSS
 		);
@@ -72,9 +72,22 @@ class Automin {
 	*/
 	public function js() {
 		$this->_write_log('Processing JS');
-		return $this->_process_markup(
+		return $this->return_data = $this->_process_markup(
 			$this->EE->TMPL->tagdata,
 			self::MARKUP_TYPE_JS
+		);
+	}
+
+	/**
+	 * exp:automin:less
+	 * This has been deprecated in favor of the css method.
+	 * @author Jesse Bunch
+	*/
+	public function less() {
+		$this->_write_log('Processing LESS');
+		return $this->return_data = $this->_process_markup(
+			$this->EE->TMPL->tagdata,
+			self::MARKUP_TYPE_LESS
 		);
 	}
 
@@ -87,6 +100,11 @@ class Automin {
 	*/
 	private function _process_markup($markup, $markup_type) {
 		
+		// AutoMin disabled? Go no further...
+		if (!$this->EE->automin_model->is_automin_enabled()) {
+			return $markup;
+		}
+
 		// Gather information
 		$markup = $this->EE->TMPL->tagdata;
 		$filename_array = $this->_extract_filenames($markup, $markup_type);
@@ -110,7 +128,8 @@ class Automin {
 		// Combine files, parse @imports if appropriate
 		$combined_file_data = $this->_combine_files(
 			$filename_array,
-			($markup_type == self::MARKUP_TYPE_CSS)
+			($markup_type == self::MARKUP_TYPE_CSS
+				OR $markup_type == self::MARKUP_TYPE_LESS)
 		);
 
 		// If we couldn't read some files, return original tags
@@ -170,16 +189,30 @@ class Automin {
 	*/
 	private function _compile_and_compress($code, $markup_type) {
 
+		@ini_set('memory_limit', '50M');
+		@ini_set('memory_limit', '128M');
+		@ini_set('memory_limit', '256M');
+		@ini_set('memory_limit', '512M');
+		@ini_set('memory_limit', '1024M');
+
 		try {
 			
 			switch($markup_type) {
 
-				case self::MARKUP_TYPE_CSS:
+				case self::MARKUP_TYPE_LESS:
 
 					// Compile with LESS
 					require_once('libraries/lessphp/lessc.inc.php');
 					$less_obj = new lessc();
 					$code = $less_obj->parse($code);
+
+					// Compress CSS
+					require_once('libraries/class.minify_css_compressor.php');
+					$code = Minify_CSS_Compressor::process($code);	
+
+					break;
+
+				case self::MARKUP_TYPE_CSS:
 
 					// Compress CSS
 					require_once('libraries/class.minify_css_compressor.php');
@@ -192,13 +225,17 @@ class Automin {
 					// Compile JS
 					require_once('libraries/class.jsmin.php');
 					$code = JSMin::minify($code);
+
+					// require_once('libraries/class.minify_js_closure.php');
+					// $code = Minify_JS_ClosureCompiler::minify($code);
 					
 					break;
 
 			}
 
 		} catch (Exception $e) {
-
+			exit($e->getMessage());
+			$this->_write_log('Compilation Exception: ' . $e->getMessage());
 			return FALSE;
 
 		}
@@ -233,6 +270,7 @@ class Automin {
 		switch($markup_type) {
 
 			case self::MARKUP_TYPE_CSS:
+			case self::MARKUP_TYPE_LESS:
 				$markup_output = sprintf(
 					'<link href="%s" %s>', 
 					$cache_filename, 
@@ -242,7 +280,7 @@ class Automin {
 
 			case self::MARKUP_TYPE_JS:
 				$markup_output = sprintf(
-					'<script src="%s" %s>', 
+					'<script src="%s" %s></script>', 
 					$cache_filename, 
 					$attributes_string
 				);
@@ -276,7 +314,10 @@ class Automin {
 
 			// Parse @imports
 			if ($should_parse_imports) {
-				$combined_output = $this->_parse_css_imports($combined_output, $file_array['url_path']);
+				$combined_output = $this->_parse_css_imports(
+					$combined_output, 
+					$file_array['url_path']
+				);
 			}
 
 		}
@@ -357,6 +398,7 @@ class Automin {
 		$matches_array;
 		switch($markup_type) {
 			case self::MARKUP_TYPE_CSS:
+			case self::MARKUP_TYPE_LESS:
 				preg_match_all(
 					"/href\=\"([A-Za-z0-9\.\/\_\-\?\=\:]+.[css|less])\"/",
 					$markup,
@@ -507,6 +549,12 @@ class Automin {
 
 	}
 
+	/**
+	 * Writes the message to the template log
+	 * @param string $message
+	 * @return void
+	 * @author Jesse Bunch
+	*/
 	private function _write_log($message) {
 		$this->EE->TMPL->log_item("AutoMin Module: $message");
 	}

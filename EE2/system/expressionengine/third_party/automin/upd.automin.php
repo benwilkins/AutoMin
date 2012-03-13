@@ -32,7 +32,7 @@ class Automin_upd {
 	 * @var string
 	 * @author Jesse Bunch
 	*/
-	public $version;
+	public $version = '2.1';
 
 	/**
 	 * Holds the EE instance
@@ -47,8 +47,6 @@ class Automin_upd {
 	*/
 	public function __construct() {
 		$this->EE =& get_instance();
-		$this->EE->load->model('automin_model');
-		$this->version = $this->EE->automin_model->version;
 	}
 	
 	/**
@@ -66,6 +64,24 @@ class Automin_upd {
 		);
 		
 		$this->EE->db->insert('modules', $module_data);
+
+		// AutoMin table
+		$sql[] = "CREATE TABLE IF NOT EXISTS `exp_automin_preferences` (
+					  `site_id` int(10) NOT NULL,
+					  `automin_enabled` varchar(1) NOT NULL DEFAULT 'n',
+					  `caching_enabled` varchar(1) NOT NULL DEFAULT 'n',
+					  `compress_html` varchar(1) NOT NULL DEFAULT 'n',
+					  `cache_path` varchar(255) NOT NULL DEFAULT '',
+					  `cache_url` varchar(255) NOT NULL DEFAULT '',
+					  PRIMARY KEY (`site_id`)
+					) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
+		$sql[] = "INSERT INTO exp_automin_preferences(site_id) VALUES({$this->EE->config->item('site_id')})";
+		
+		foreach($sql as $query) {
+			$this->EE->db->query($query);
+		}
+
 		
 		return TRUE;
 	}
@@ -87,6 +103,8 @@ class Automin_upd {
 		
 		$this->EE->db->where('module_name', 'Automin')
 					 ->delete('modules');
+
+		$this->EE->db->query("DROP TABLE IF EXISTS exp_automin_preferences");
 		
 		return TRUE;
 	}
@@ -98,9 +116,14 @@ class Automin_upd {
 	 * @author Jesse Bunch
 	*/
 	public function update($current = '') {
+
+		if (version_compare($current, '2.1', '<')) {
+			$this->uninstall();
+			$this->install();
+			return TRUE;
+		}
 		
-		// If you have updates, drop 'em in here.
-		return TRUE;
+		return FALSE;
 	}
 	
 }

@@ -15,13 +15,6 @@
 // ------------------------------------------------------------------------
 
 class Automin_model {
-	
-	/**
-	 * The current AutoMin version
-	 * @var string
-	 * @author Jesse Bunch
-	*/
-	public $version = '2.1';
 
 	/**
 	 * Holds our EE instance
@@ -103,10 +96,23 @@ class Automin_model {
 		if (!$settings_array) {
 
 			// Fetch settings stored in the DB
-			$settings_result = $this->EE->db->limit(1)
-				->where('site_id', $this->EE->config->item('site_id'))
-				->get('automin_preferences');
-			$settings_array = $settings_result->row_array();
+			$settings_query = $this->EE->db->limit(1)
+				->where('site_id', $this->EE->config->item('site_id'));
+			$settings_array = $settings_query
+				->get('automin_preferences')
+				->row_array();
+
+			// If no row was returned, let's create
+			// the row for this site
+			if (!$settings_array) {
+				$values = array(
+					'site_id' => $this->EE->config->item('site_id')
+				);
+				$this->EE->db->insert('automin_preferences', $values);
+				$settings_array = $settings_query
+					->get('automin_preferences')
+					->row_array();
+			}	
 
 			// Overwrite with config values
 			foreach($settings_array as $key=>$value) {
@@ -114,6 +120,17 @@ class Automin_model {
 					$settings_array[$key] = $this->EE->config->item("automin_$key");
 				}
 			}
+
+			// Legacy 'automin_cache_enabled'
+			$settings_array['caching_enabled'] = ($this->EE->config->item('automin_cache_enabled')) ?: $settings_array['caching_enabled'];
+
+			// Legacy 'automin_compress_markup'
+			$settings_array['compress_html'] = ($this->EE->config->item('automin_compress_markup')) ?: $settings_array['compress_html'];
+
+			// Legacy 'automin_cache_server_path'
+			$settings_array['cache_path'] = ($this->EE->config->item('automin_cache_server_path')) ?: $settings_array['cache_path'];
+
+
 
 		}
 
