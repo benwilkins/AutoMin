@@ -14,7 +14,7 @@
  
 // ------------------------------------------------------------------------
 
-class Caching_library {
+class Automin_Caching_library {
 
 	private $EE;
 

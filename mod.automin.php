@@ -50,7 +50,7 @@ class Automin {
 		$this->EE =& get_instance();
 		$this->EE->load->model('automin_model');
 		$this->EE->load->library('minification_library');
-		$this->EE->load->library('caching_library');
+		$this->EE->load->library('automin_caching_library', 'caching_library');
 	}
 	
 	/**
