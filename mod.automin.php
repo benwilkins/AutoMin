@@ -50,7 +50,7 @@ class Automin {
 		$this->EE =& get_instance();
 		$this->EE->load->model('automin_model');
 		$this->EE->load->library('minification_library');
-		$this->EE->load->library('caching_library');
+		$this->EE->load->library('automin_caching_library');
 	}
 	
 	/**
@@ -114,10 +114,10 @@ class Automin {
 		// File Extension
 		// LESS files should have a .css extension
 		$extension = ($markup_type == self::MARKUP_TYPE_LESS) ? self::MARKUP_TYPE_CSS : $markup_type;
-		$cache_key = $this->EE->caching_library->get_cache_key($markup, $extension);
+		$cache_key = $this->EE->automin_caching_library->get_cache_key($markup, $extension);
 
 		// Fetch and validate cache
-		$cache_filename = $this->EE->caching_library->fetch_cache(
+		$cache_filename = $this->EE->automin_caching_library->fetch_cache(
 			$cache_key, 
 			$markup, 
 			$last_modified
@@ -170,7 +170,7 @@ class Automin {
 		}
 
 		// Cache output
-		$cache_result = $this->EE->caching_library->write_cache($cache_key, $combined_file_data);
+		$cache_result = $this->EE->automin_caching_library->write_cache($cache_key, $combined_file_data);
 
 		// If caching failed, return original tags
 		if (FALSE === $cache_result) {
