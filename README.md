@@ -18,7 +18,7 @@ Thanks to the minify project for their CSS compressor and the JSMin project for 
 
 Changelog
 ---
-### Version 2.1.1
+### Version 2.1.2
  - Fixed Bug #10. When compiling less, the .less extension is no longer given to the cache file.
 
 ### Version 2.1 - Please read carefully!

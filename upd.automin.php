@@ -32,7 +32,7 @@ class Automin_upd {
 	 * @var string
 	 * @author Jesse Bunch
 	*/
-	public $version = '2.1.1';
+	public $version = '2.1.2';
 
 	/**
 	 * Holds the EE instance

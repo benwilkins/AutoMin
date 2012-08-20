@@ -31,7 +31,7 @@ class Automin_ext {
 	public $docs_url		= 'https://github.com/bunchjesse/AutoMin';
 	public $name			= 'AutoMin';
 	public $settings_exist	= 'n';
-	public $version			= '2.1.1';
+	public $version			= '2.1.2';
 	
 	private $EE;
 	
