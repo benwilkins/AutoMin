@@ -106,9 +106,12 @@ class Automin {
 		}
 
 		// Gather information
-		$markup = $this->EE->TMPL->parse_globals($this->EE->TMPL->tagdata);
+		$markup = $this->EE->TMPL->tagdata;
+		$template_array = $this->_extract_templates($markup, $markup_type);
 		$filename_array = $this->_extract_filenames($markup, $markup_type);
 		$filename_array = $this->_prep_filenames($filename_array);
+		
+		$filename_array = array_merge($template_array, $filename_array);
 		$lastest_modified = $this->_find_lastest_modified_timestamp($filename_array);
 
 		// File Extension
@@ -182,6 +185,50 @@ class Automin {
 		return $this->_format_output($cache_result, $lastest_modified, $markup_type);
 		
 
+	}
+
+	/**
+	 * Extract template junkola
+	 *
+	*/
+	private function _extract_templates($markup, $markup_type) {
+		
+		$template_array = array();
+
+		switch($markup_type) {
+			case self::MARKUP_TYPE_CSS:
+			case self::MARKUP_TYPE_LESS:
+			case self::MARKUP_TYPE_JS:			
+				preg_match_all(
+					"#".LD."\s*(stylesheet|path)=[\042\047]?/?(.*?)/?[\042\047]?".RD."#",
+					$markup,
+					$templates
+				);
+				break;
+		}
+
+		$i = 0;
+		foreach($templates[2] as $template)
+		{
+			$group_template_array = explode('/', $template, 2);
+			$this->EE->db->select('t.edit_date')->
+				from('exp_templates t, exp_template_groups tg')->
+				where('tg.group_name', $group_template_array[0])->
+				where('t.template_name', $group_template_array[1])->
+				where('t.site_id', $this->EE->config->item('site_id'));
+				
+			$query = $this->EE->db->get();
+			if ($query->num_rows() > 0) {
+				$result = $query->row();
+				$template_array[$i]['url_path'] = sprintf($this->EE->config->item('site_url') . '%s/%s',$group_template_array[0], $group_template_array[1]);
+				$template_array[$i]['server_path'] = sprintf($this->EE->config->item('site_url') . '%s/%s',$group_template_array[0], $group_template_array[1]);
+				$template_array[$i]['last_modified'] = $result->edit_date;
+			}
+			$i++;
+		}
+		
+		return $template_array;
+		
 	}
 
 	/**
@@ -307,7 +354,7 @@ class Automin {
 
 		$combined_output = '';
 		foreach ($files_array as $file_array) {
-
+			
 			if ($combined_output .= file_get_contents($file_array['server_path'])) {
 				// Parse @imports
 				if ($should_parse_imports) {
@@ -337,7 +384,7 @@ class Automin {
 		$lastest_modified_timestamp = 0;
 		foreach ($files_array as $file_array) {
 			if ($file_array['last_modified']
-				AND $file_array['last_modified'] > $last_modified_timestamp) {
+				AND $file_array['last_modified'] > $lastest_modified_timestamp) {
 				$lastest_modified_timestamp = $file_array['last_modified'];
 			}
 		}
@@ -400,7 +447,7 @@ class Automin {
 			case self::MARKUP_TYPE_CSS:
 			case self::MARKUP_TYPE_LESS:
 				preg_match_all(
-					"/href\=\"(.*)\"/siU",
+					"/href\=\"([A-Za-z0-9\.\/\_\-\?\=\:]+.[css|less])\"/",
 					$markup,
 					$matches_array
 				);
@@ -468,6 +515,7 @@ class Automin {
 		// If the path is a full URL, return it
 		// We don't currently fetch remote files
 		if (0 === stripos($file_path, 'http')
+			OR 0 === stripos($file_path, 'https')
 			OR 0 === stripos($file_path, '//')) {
 			return $file_path;
 		}
