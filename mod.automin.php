@@ -109,7 +109,7 @@ class Automin {
 		$markup = $this->EE->TMPL->parse_globals($this->EE->TMPL->tagdata);
 		$filename_array = $this->_extract_filenames($markup, $markup_type);
 		$filename_array = $this->_prep_filenames($filename_array);
-		$last_modified = $this->_find_last_modified_timestamp($filename_array);
+		$lastest_modified = $this->_find_lastest_modified_timestamp($filename_array);
 
 		// File Extension
 		// LESS files should have a .css extension
@@ -120,13 +120,13 @@ class Automin {
 		$cache_filename = $this->EE->automin_caching_library->fetch_cache(
 			$cache_key, 
 			$markup, 
-			$last_modified
+			$lastest_modified
 		);
 		
 		// Output cache file, if valid
 		if (FALSE !== $cache_filename) {
 			$this->_write_log("Cache found and valid");
-			return $this->_format_output($cache_filename, $last_modified, $markup_type);
+			return $this->_format_output($cache_filename, $lastest_modified, $markup_type);
 		}
 
 		// Combine files, parse @imports if appropriate
@@ -179,7 +179,7 @@ class Automin {
 		}
 		
 		// Return the markup output
-		return $this->_format_output($cache_result, $last_modified, $markup_type);
+		return $this->_format_output($cache_result, $lastest_modified, $markup_type);
 		
 
 	}
@@ -256,12 +256,12 @@ class Automin {
 	 * @return string
 	 * @author Jesse Bunch
 	*/
-	private function _format_output($cache_filename, $last_modified, $markup_type) {
+	private function _format_output($cache_filename, $lastest_modified, $markup_type) {
 
 		$markup_output = '';
 		
 		// Append modified time to the filename
-		$cache_filename = "$cache_filename?modified=$last_modified";
+		$cache_filename = "$cache_filename?modified=$lastest_modified";
 
 		// Format attributes
 		$tag_attributes = $this->_fetch_colon_params('attribute');
@@ -308,7 +308,7 @@ class Automin {
 		$combined_output = '';
 		foreach ($files_array as $file_array) {
 
-			if ($combined_output = file_get_contents($file_array['server_path'])) {
+			if ($combined_output .= file_get_contents($file_array['server_path'])) {
 				// Parse @imports
 				if ($should_parse_imports) {
 					$combined_output = $this->_parse_css_imports(
@@ -332,17 +332,17 @@ class Automin {
 	 * @return int
 	 * @author Jesse Bunch
 	*/
-	private function _find_last_modified_timestamp($files_array) {
+	private function _find_lastest_modified_timestamp($files_array) {
 		
-		$last_modified_timestamp = 0;
+		$lastest_modified_timestamp = 0;
 		foreach ($files_array as $file_array) {
 			if ($file_array['last_modified']
 				AND $file_array['last_modified'] > $last_modified_timestamp) {
-				$last_modified_timestamp = $file_array['last_modified'];
+				$lastest_modified_timestamp = $file_array['last_modified'];
 			}
 		}
 
-		return $last_modified_timestamp;
+		return $lastest_modified_timestamp;
 
 	}
 
