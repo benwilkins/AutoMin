@@ -106,7 +106,7 @@ class Automin {
 		}
 
 		// Gather information
-		$markup = $this->EE->TMPL->tagdata;
+		$markup = $this->EE->TMPL->parse_globals($this->EE->TMPL->tagdata);
 		$filename_array = $this->_extract_filenames($markup, $markup_type);
 		$filename_array = $this->_prep_filenames($filename_array);
 		$last_modified = $this->_find_last_modified_timestamp($filename_array);
@@ -152,7 +152,7 @@ class Automin {
 
 		// Log the savings
 		$data_savings_kb = $data_length_before - $data_length_after;
-		$data_savings_percent = ($data_savings_kb / $data_length_before) * 100;
+		@$data_savings_percent = ($data_savings_kb / $data_length_before) * 100;
 		$data_savings_message = sprintf(
 			'(%s Compression) Before: %1.0fkb / After: %1.0fkb / Data reduced by %1.2fkb or %1.2f%%',
 			strtoupper($markup_type),
@@ -304,24 +304,20 @@ class Automin {
 	 * @author Jesse Bunch
 	*/
 	private function _combine_files($files_array, $should_parse_imports = FALSE) {
-		
+
 		$combined_output = '';
 		foreach ($files_array as $file_array) {
-			
-			if (!file_exists($file_array['server_path'])
-				OR !is_readable($file_array['server_path'])) {
+
+			if ($combined_output = file_get_contents($file_array['server_path'])) {
+				// Parse @imports
+				if ($should_parse_imports) {
+					$combined_output = $this->_parse_css_imports(
+						$combined_output, 
+						$file_array['url_path']
+					);
+				}
+			} else {
 				return FALSE;
-			}
-
-			// Get file contents
-			$combined_output .= file_get_contents($file_array['server_path']);
-
-			// Parse @imports
-			if ($should_parse_imports) {
-				$combined_output = $this->_parse_css_imports(
-					$combined_output, 
-					$file_array['url_path']
-				);
 			}
 
 		}
@@ -404,7 +400,7 @@ class Automin {
 			case self::MARKUP_TYPE_CSS:
 			case self::MARKUP_TYPE_LESS:
 				preg_match_all(
-					"/href\=\"([A-Za-z0-9\.\/\_\-\?\=\:]+.[css|less])\"/",
+					"/href\=\"(.*)\"/siU",
 					$markup,
 					$matches_array
 				);
