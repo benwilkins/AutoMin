@@ -107,7 +107,7 @@ class Automin {
 
 		// Gather information
 		$markup = $this->EE->TMPL->tagdata;
-		$template_array = $this->_extract_templates($markup, $markup_type);
+		$template_array = $this->_extract_templates($markup);
 		$filename_array = $this->_extract_filenames($markup, $markup_type);
 		$filename_array = $this->_prep_filenames($filename_array);
 		
@@ -187,49 +187,7 @@ class Automin {
 
 	}
 
-	/**
-	 * Extract template junkola
-	 *
-	*/
-	private function _extract_templates($markup, $markup_type) {
-		
-		$template_array = array();
 
-		switch($markup_type) {
-			case self::MARKUP_TYPE_CSS:
-			case self::MARKUP_TYPE_LESS:
-			case self::MARKUP_TYPE_JS:			
-				preg_match_all(
-					"#".LD."\s*(stylesheet|path)=[\042\047]?/?(.*?)/?[\042\047]?".RD."#",
-					$markup,
-					$templates
-				);
-				break;
-		}
-
-		$i = 0;
-		foreach($templates[2] as $template)
-		{
-			$group_template_array = explode('/', $template, 2);
-			$this->EE->db->select('t.edit_date')->
-				from('exp_templates t, exp_template_groups tg')->
-				where('tg.group_name', $group_template_array[0])->
-				where('t.template_name', $group_template_array[1])->
-				where('t.site_id', $this->EE->config->item('site_id'));
-				
-			$query = $this->EE->db->get();
-			if ($query->num_rows() > 0) {
-				$result = $query->row();
-				$template_array[$i]['url_path'] = sprintf($this->EE->config->item('site_url') . '%s/%s',$group_template_array[0], $group_template_array[1]);
-				$template_array[$i]['server_path'] = sprintf($this->EE->config->item('site_url') . '%s/%s',$group_template_array[0], $group_template_array[1]);
-				$template_array[$i]['last_modified'] = $result->edit_date;
-			}
-			$i++;
-		}
-		
-		return $template_array;
-		
-	}
 
 	/**
 	 * Compress and compile (if necessary) the code.
@@ -468,6 +426,47 @@ class Automin {
 
 		return FALSE;
 
+	}
+	
+	/**
+	 * Extracts {path} and {stylesheet} tags from the markup based on the provided
+	 * markup type.
+	 * @param string $markup
+	 * @param string $markup_type Use one of the constants MARKUP_TYPE_X
+	 * @return array (of filenames)
+	 * @author Chris LeBlanc (eedfwChris)
+	*/
+	private function _extract_templates($markup) {
+		
+		$template_array = array();		
+		preg_match_all(
+			"#".LD."\s*(stylesheet|path)=[\042\047]?/?(.*?)/?[\042\047]?".RD."#",
+			$markup,
+			$templates
+		);
+
+		$i = 0;
+		foreach($templates[2] as $template)
+		{
+			$group_template_array = explode('/', $template, 2);
+			$this->EE->db->select('t.edit_date')->
+				from('exp_templates t, exp_template_groups tg')->
+				where('tg.group_name', $group_template_array[0])->
+				where('t.template_name', $group_template_array[1])->
+				where('t.site_id', $this->EE->config->item('site_id'));
+				
+			$query = $this->EE->db->get();
+			if ($query->num_rows() > 0) {
+				$result = $query->row();
+				$template_array[$i]['url_path'] = sprintf($this->EE->config->item('site_url') . '%s/%s',$group_template_array[0], $group_template_array[1]);
+				$template_array[$i]['server_path'] = sprintf($this->EE->config->item('site_url') . '%s/%s',$group_template_array[0], $group_template_array[1]);
+				$template_array[$i]['last_modified'] = $result->edit_date;
+			}
+			$i++;
+		}
+		
+		return $template_array;
+		
 	}
 
 	/**
