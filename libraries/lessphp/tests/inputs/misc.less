@@ -1,10 +1,7 @@
 
-@hello: "utf-8";
-@charset @hello;
-
 @color: #fff;
-@images: "/assets/images/";
-@images: @images + "test/"; 
+@base_path: "/assets/images/";
+@images: @base_path + "test/"; 
 .topbar { background: url(@{images}topbar.png); }
 .hello { test: empty-function(@images, 40%, to(@color)); }
 
@@ -37,11 +34,19 @@ Here is a block comment
 }
 
 
+.urls {
+	@var: "http://google.com";
+	background: url(@var);
+	background: url(@{var});
+	background: url("@{var}");
+}
+
 .mix(@arg) { color: @arg; }
 @aaa: aaa;
 @bbb: bbb;
 // make sure the opening selector isn't too greedy
 .cool {.mix("@{aaa}, @{bbb}")}
+.cool();
 
 .cool("{hello");
 .cool('{hello');
@@ -67,5 +72,22 @@ Here is a block comment
 
 .rad {
 	.hi;
+}
+
+
+hello {
+	numbers: 1.0 0.1 .1 1.;
+	numbers: 1.0s 0.1s .1s 1.s;
+	numbers: -1.0s -0.1s -.1s -1.s;
+	numbers: -1.0 -0.1 -.1 -1.;
+}
+
+
+#string {
+	hello: 'what\'s going on here';
+	hello: 'blah blag @{ blah blah';
+
+	join: 3434 + "hello";
+	join: 3434 + hello;
 }
 

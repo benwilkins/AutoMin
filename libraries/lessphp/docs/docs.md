@@ -1,8 +1,8 @@
-    title: v0.3.1 documentation
+    title: v0.3.8 documentation
     link_to_home: true
 --
 
-<h2 skip="true">Documentation v0.3.0</h2>
+<h2 skip="true">Documentation v0.3.8</h2>
 
 <div style="margin-bottom: 1em;">$index</div>
 
@@ -82,6 +82,16 @@ appear. They can hold any CSS property value.
 Variables are only visible for use from their current scope, or any enclosed
 scopes.
 
+If you have a string or keyword in a variable, you can reference another
+variable by that name by repeating the `@`:
+
+    ```less
+    @value: 20px;
+    @value_name: "value";
+
+    width: @@value_name;
+    ```
+
 ### Expressions
 
 Expressions let you combine values and variables in meaningful ways. For
@@ -126,9 +136,16 @@ they are evaluated:
     margin: 10px - 5px;
     ```
 
-Division has a special quirk. Due to CSS font shorthand syntax, we need to be
-careful about how we place spaces. In the following example we are using font
-size and lineheight shorthand. No division should take place:
+Division has a special quirk. There are certain CSS properties that use the `/`
+operator as part of their value's syntax. Namely, the [font][4] shorthand and
+[border-radius][3].
+
+  [3]: https://developer.mozilla.org/en/CSS/border-radius
+  [4]: https://developer.mozilla.org/en/CSS/font
+
+
+Thus, **lessphp** will ignore any division in these properties unless it is
+wrapped in parentheses. For example, no division will take place here:
 
     ```less
     .font {
@@ -136,14 +153,21 @@ size and lineheight shorthand. No division should take place:
     }
     ```
 
-In order to force division we can surround the `/` by spaces, or we can wrap
-the expression in parentheses:
+In order to force division we must wrap the expression in parentheses:
 
     ```less
     .font {
-      // these two will evaluate
-      font: 20px / 80px "Times New Roman";
       font: (20px/80px) "Times New Roman";
+    }
+    ```
+
+If you want to write a literal `/` expression without dividing in another
+property (or a variable), you can use [string unquoting](#string_unquoting):
+
+    ```less
+    .var {
+      @size: ~"20px/80px";
+      font: @size sans-serif;
     }
     ```
 
@@ -156,7 +180,7 @@ logically organize the structure of our CSS.
     ```less
     ol.list {
       li.special {
-        border: 1px solid red; 
+        border: 1px solid red;
       }
 
       li.plain {
@@ -257,7 +281,7 @@ compiled. Its properties will only appear when mixed into another block.
 
 The canonical example is to create a rounded corners mixin that works across
 browsers:
-    
+
     ```less
     .rounded-corners(@radius: 5px) {
       border-radius: @radius;
@@ -282,7 +306,7 @@ show up in the output, give it a blank argument list:
     .secret() {
       font-size: 6000px;
     }
-    
+
     .div {
       .secret;
     }
@@ -331,7 +355,7 @@ spaces.
 This useful for quickly assigning all the arguments:
 
     ```less
-    .box-shadow(@inset, @x, @y, @blur, @spread, @color) {
+    .box-shadow(@x, @y, @blur, @color) {
       box-shadow: @arguments;
       -webkit-box-shadow: @arguments;
       -moz-box-shadow: @arguments;
@@ -341,7 +365,7 @@ This useful for quickly assigning all the arguments:
     }
     ```
 
-In addition to the arguments passed to the mixin, `@arguments` will also inlude
+In addition to the arguments passed to the mixin, `@arguments` will also include
 remaining default values assigned by the mixin:
 
 
@@ -354,6 +378,309 @@ remaining default values assigned by the mixin:
       .border-mixin(4px, dotted);
     }
 
+    ```
+
+
+#### Pattern Matching
+
+When you *mix in* a mixin, all the available mixins of that name in the current
+scope are checked to see if they match based on what was passed to the mixin
+and how it was declared.
+
+The simplest case is matching by number of arguments. Only the mixins that
+match the number of arguments passed in are used.
+
+    ```less
+    .simple() { // matches no arguments
+      height: 10px;
+    }
+
+    .simple(@a, @b) { // matches two arguments
+      color: red;
+    }
+
+    .simple(@a) { // matches one argument
+      color: blue;
+    }
+
+    div {
+      .simple(10);
+    }
+
+    span {
+      .simple(10, 20);
+    }
+    ```
+
+Whether an argument has default values is also taken into account when matching
+based on number of arguments:
+
+    ```less
+    // matches one or two arguments
+    .hello(@a, @b: blue) {
+      height: @a;
+      color: @b;
+    }
+
+    .hello(@a, @b) { // matches only two
+      width: @a;
+      border-color: @b;
+    }
+
+    .hello(@a) { // matches only one
+      padding: 1em;
+    }
+
+    div {
+      .hello(10px);
+    }
+
+    pre {
+      .hello(10px, yellow);
+    }
+    ```
+
+Additionally, a *vararg* value can be used to further control how things are
+matched.  A mixin's argument list can optionally end in the special argument
+named `...`.  The `...` may match any number of arguments, including 0.
+
+    ```less
+    // this will match any number of arguments
+    .first(...) {
+      color: blue;
+    }
+
+    // matches at least 1 argument
+    .second(@arg, ...) {
+      height: 200px + @arg;
+    }
+
+    div { .first("some", "args"); }
+    pre { .second(10px); }
+    ```
+
+If you want to capture the values that get captured by the *vararg* you can
+give it a variable name by putting it directly before the `...`. This variable
+must be the last argument defined. It's value is just like the special
+[`@arguments` variable](#arguments_variable), a space separated list.
+
+
+    ```less
+    .hello(@first, @rest...) {
+      color: @first;
+      text-shadow: @rest;
+    }
+
+    span {
+      .hello(red, 1px, 1px, 0px, white);
+    }
+
+    ```
+
+Another way of controlling whether a mixin matches is by specifying a value in
+place of an argument name when declaring the mixin:
+
+    ```less
+    .style(old, @size) {
+      font: @size serif;
+    }
+
+    .style(new, @size) {
+      font: @size sans-serif;
+    }
+
+    .style(@_, @size) {
+      letter-spacing: floor(@size / 6px);
+    }
+
+    em {
+      @switch: old;
+      .style(@switch, 15px);
+    }
+    ```
+
+Notice that two of the three mixins were matched. The mixin with a matching
+first argument, and the generic mixin that matches two arguments. It's common
+to use `@_` as the name of a variable we intend to not use. It has no special
+meaning to LESS, just to the reader of the code.
+
+#### Guards
+
+Another way of restricting when a mixin is mixed in is by using guards. A guard
+is a special expression that is associated with a mixin declaration that is
+evaluated during the mixin process. It must evaluate to true before the mixin
+can be used.
+
+We use the `when` keyword to begin describing a list of guard expressions.
+
+Here's a simple example:
+
+    ```less
+    .guarded(@arg) when (@arg = hello) {
+      color: blue;
+    }
+
+    div {
+      .guarded(hello); // match
+    }
+
+    span {
+      .guarded(world); // no match
+    }
+    ```
+Only the `div`'s mixin will match in this case, because the guard expression
+requires that `@arg` is equal to `hello`.
+
+We can include many different guard expressions by separating them by commas.
+Only one of them needs to match to trigger the mixin:
+
+    ```less
+    .x(@a, @b) when (@a = hello), (@b = world) {
+      width: 960px;
+    }
+
+    div {
+      .x(hello, bar); // match
+    }
+
+    span {
+      .x(foo, world); // match
+    }
+
+    pre {
+      .x(foo, bar); // no match
+    }
+    ```
+
+Instead of a comma, we can use `and` keyword to make it so all of the guards
+must match in order to trigger the mixin. `and` has higher precedence than the
+comma.
+
+    ```less
+    .y(@a, @b) when (@a = hello) and (@b = world) {
+      height: 600px;
+    }
+
+    div {
+      .y(hello, world); // match
+    }
+
+    span {
+      .y(hello, bar); // no match
+    }
+    ```
+
+Commas and `and`s can be mixed and matched.
+
+You can also negate a guard expression by using `not` in from of the parentheses:
+
+    ```less
+    .x(@a) when not (@a = hello) {
+      color: blue;
+    }
+
+    div {
+      .x(hello); // no match
+    }
+    ```
+
+The `=` operator is used to check equality between any two values. For numbers
+the following comparison operators are also defined:
+
+`<`, `>`, `=<`, `>=`
+
+There is also a collection of predicate functions that can be used to test the
+type of a value.
+
+These are `isnumber`, `iscolor`, `iskeyword`, `isstring`, `ispixel`,
+`ispercentage` and `isem`.
+
+    ```less
+    .mix(@a) when (ispercentage(@a)) {
+      height: 500px * @a;
+    }
+    .mix(@a) when (ispixel(@a)) {
+      height: @a;
+    }
+
+    div.a {
+      .mix(50%);
+    }
+
+    div.a {
+      .mix(350px);
+    }
+    ```
+
+#### !important
+
+If you want to apply the `!important` suffix to every property when mixing in a
+mixin, just append `!important` to the end of the call to the mixin:
+
+    ```less
+    .make_bright {
+      color: red;
+      font-weight: bold;
+    }
+
+    .color {
+      color: green;
+    }
+
+    body {
+      .make_bright() !important;
+      .color();
+    }
+
+    ```
+
+### Selector Expressions
+
+Sometimes we want to dynamically generate the selector of a block based on some
+variable or expression. We can do this by using *selector expressions*. Selector
+expressions are CSS selectors that are evaluated in the current scope before
+being written out.
+
+A simple example is a mixin that dynamically creates a selector named after the
+mixin's argument:
+
+    ```less
+    .create-selector(@name) {
+      (e(@name)) {
+        color: red;
+      }
+    }
+
+    .create-selector("hello");
+    .create-selector("world");
+    ```
+
+Any selector that is enclosed in `()` will have it's contents evaluated and
+directly written to output. The value is not changed any way before being
+outputted, thats why we use the `e` function. If you're not familiar, the `e`
+function strips quotes off a string value. If we didn't have it, then the
+selector would have quotes around it, and that's not valid CSS!
+
+Any value can be used in a selector expression, but it works best when using
+strings and things like [String Interpolation](#string_interpolation).
+
+Here's an interesting example adapted from Twitter Bootstrap. A couple advanced
+things are going on. We are using [Guards](#guards) along with a recursive
+mixin to work like a loop to generate a series of CSS blocks.
+
+
+    ```less
+    // create our recursive mixin:
+    .spanX (@index) when (@index > 0) {
+      (~".span@{index}") {
+        width: @index * 100px;
+      }
+      .spanX(@index - 1);
+    }
+    .spanX (0) {}
+
+    // mix it into the global scopee:
+    .spanX(4);
     ```
 
 ### Import
@@ -503,28 +830,31 @@ function that let's you unquote any value. It is called `e`.
 
 * `spin(color, amount)` -- returns a color with `amount` degrees added to hue
 
-* `fade(color, amount)` -- retuns a color with the alpha set to `amount`
+* `fade(color, amount)` -- returns a color with the alpha set to `amount`
 
-* `hue(color)` -- retuns the hue of `color`
+* `hue(color)` -- returns the hue of `color`
 
-* `saturation(color)` -- retuns the saturation of `color`
+* `saturation(color)` -- returns the saturation of `color`
 
-* `lightness(color)` -- retuns the lightness of `color`
+* `lightness(color)` -- returns the lightness of `color`
 
-* `alpha(color)` -- retuns the alpha value of `color` or 1.0 if it doesn't have an alpha
+* `alpha(color)` -- returns the alpha value of `color` or 1.0 if it doesn't have an alpha
 
-* `percentage(number)` -- converts a floating point number to a percentage, eg. `0.65` -> `65%`
+* `percentage(number)` -- converts a floating point number to a percentage, e.g. `0.65` -> `65%`
 
-* `mix(color1, color1, percent)` -- mixes two colors by percentagle where 100%
+* `mix(color1, color1, percent)` -- mixes two colors by percentage where 100%
   keeps all of `color1`, and 0% keeps all of `color2`. Will take into account
   the alpha of the colors if it exists. See
   <http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html#mix-instance_method>.
 
+* `constrast(color, dark, light)` -- if `color` has a lightness value greater
+  than 50% then `dark` is returned, otherwise return `light`.
+
 * `rgbahex(color)` -- returns a string containing 4 part hex color.
-   
+
    This is used to convert a CSS color into the hex format that IE's filter
    method expects when working with an alpha component.
-   
+
        ```less
        .class {
           @start: rgbahex(rgba(25, 34, 23, .5));
@@ -537,48 +867,156 @@ function that let's you unquote any value. It is called `e`.
 
 ## PHP Interface
 
-The PHP interface lets you control the compiler from your PHP scripts. There is
-only one file to include to get access to everything:
+When working with **lessphp** from PHP, the typical flow is to create a new
+instance of `lessc`, configure it how you like, then tell it to compile
+something using one built in compile methods.
+
+Methods:
+
+* [`compile($string)`](#compiling[) -- Compile a string
+
+* [`compileFile($inFile, [$outFile])`](#compiling) -- Compile a file to another or return it
+
+* [`checkedCompile($inFile, $outFile)`](#compiling) -- Compile a file only if it's newer
+
+* [`cachedCompile($cacheOrFile, [$force])`](#compiling_automatically) -- Conditionally compile while tracking imports
+
+* [`setFormatter($formatterName)`](#output_formatting) -- Change how CSS output looks
+
+* [`setPreserveComments($keepComments)`](#preserving_comments) -- Change if comments are kept in output
+
+* [`registerFunction($name, $callable)`](#custom_functions) -- Add a custom function
+
+* [`unregisterFunction($name)`](#custom_functions) -- Remove a registered function
+
+* [`setVariables($vars)`](#setting_variables_from_php) -- Set a variable from PHP
+
+* [`unsetVariable($name)`](#setting_variables_from_php) -- Remove a PHP variable
+
+* [`setImportDir($dirs)`](#import_directory) -- Set the search path for imports
+
+* [`addImportDir($dir)`](#import_directory) -- Append directory to search path for imports
+
+
+### Compiling
+
+The `compile` method compiles a string of LESS code to CSS.
 
     ```php
     <?php
-    include "lessc.inc.php";
+    require "lessc.inc.php";
+
+    $less = new lessc;
+    echo $less->compile(".block { padding: 3 + 4px }");
     ```
 
-To compile a file to a string (of CSS code):
+The `compileFile` method reads and compiles a file. It will either return the
+result or write it to the path specified by an optional second argument.
 
     ```php
-    $less = new lessc("myfile.less");
-    $css = $less->parse();
+    echo $less->compileFile("input.less");
     ```
 
-To compile a string to a string:
+The `compileChecked` method is like `compileFile`, but it only compiles if the output
+file doesn't exist or it's older than the input file:
 
     ```php
-    $less = new lessc(); // a blank lessc
-    $css = $less->parse("body { a { color: red } }");
+    $less->checkedCompile("input.less", "output.css");
     ```
+
+See [Compiling Automatically](#compiling_automatically) for a description of
+the more advanced `cachedCompile` method.
+
+### Output Formatting
+
+Output formatting controls the indentation of the output CSS. Besides the
+default formatter, two additional ones are included and it's also easy to make
+your own.
+
+To use a formatter, the method `setFormatter` is used. Just
+pass the name of the formatter:
+
+    ```php
+    $less = new lessc;
+
+    $less->setFormatter("compressed");
+    echo $less->compile("div { color: lighten(blue, 10%) }");
+    ```
+
+In this example, the `compressed` formatter is used. The formatters are:
+
+ * `lessjs` *(default)* -- Same style used in LESS for JavaScript
+
+ * `compressed` -- Compresses all the unrequired whitespace
+
+ * `classic` -- **lessphp**'s original formatter
+
+To revert to the default formatter, call `setFormatter` with a value of `null`.
+
+#### Custom Formatter
+
+The easiest way to customize the formatter is to create your own instance of an
+existing formatter and alter its public properties before passing it off to
+**lessphp**. The `setFormatter` method can also take an instance of a
+formatter.
+
+Each of the formatter names corresponds to a class with `lessc_formatter_`
+prepended in front of it. Here the classic formatter is customized to use tabs
+instead of spaces:
+
+
+    ```php
+    $formatter = new lessc_formatter_classic;
+    $formatter->indentChar = "\t";
+
+    $less = new lessc;
+    $less->setFormatter($formatter);
+    echo $less->compileFile("myfile.less");
+    ```
+
+For more information about what can be configured with the formatter consult
+the source code.
+
+### Preserving Comments
+
+By default, all comments in the source LESS file are stripped when compiling.
+You might want to keep the `/* */` comments in the output though. For
+example, bundling a license in the file.
+
+Enable or disable comment preservation by calling `setPreserveComments`:
+
+    ```php
+    $less = new lessc;
+    $less->setPreserveComments(true);
+    echo $less->compile("/* hello! */");
+    ```
+
+Comments are disabled by default because there is additional overhead, and more
+often than not they aren't needed.
+
 
 ### Compiling Automatically
 
-Often, you want to write the compiled CSS to a file, and only recompile when
-the original LESS file has changed. The following function will check if the
-modification date of the LESS file is more recent than the CSS file.  The LESS
-file will be compiled if it is. If the CSS file doesn't exist yet, then it will
-also compile the LESS file.
+Often, you want to only compile a LESS file only if it has been modified since
+last compile. This is very important because compiling is performance intensive
+and you should avoid a recompile if it possible.
+
+The `checkedCompile` compile method will do just that. It will check if the
+input file is newer than the output file, or if the output file doesn't exist
+yet, and compile only then.
 
     ```php
-    lessc::ccompile('myfile.less', 'mystyle.css');
+    $less->checkedCompile("input.less", "output.css");
     ```
 
-`ccompile` is very basic, it only checks if the input file's modification time.
-It is not of any files that are brought in using `@import`.
+There's a problem though. `checkedCompile` is very basic, it only checks the
+input file's modification time. It is unaware of any files from `@import`.
 
-For this reason we also have `lessc::cexecute`. It functions slightly
-differently, but gives us the ability to check changes to all files used during
-the compile. It takes one argument, either the name of the file we want to
-compile, or an existing *cache object*. Its return value is an updated cache
-object.
+
+For this reason we also have `cachedCompile`. It's slightly more complex, but
+gives us the ability to check changes to all files including those imported. It
+takes one argument, either the name of the file we want to compile, or an
+existing *cache object*. Its return value is an updated cache object.
 
 If we don't have a cache object, then we call the function with the name of the
 file to get the initial cache object. If we do have a cache object, then we
@@ -588,25 +1026,28 @@ The cache object keeps track of all the files that must be checked in order to
 determine if a rebuild is required.
 
 The cache object is a plain PHP `array`. It stores the last time it compiled in
-`$cache['updated']` and output of the compile in `$cache['compiled']`.
+`$cache["updated"]` and output of the compile in `$cache["compiled"]`.
 
 Here we demonstrate creating an new cache object, then using it to see if we
 have a recompiled version available to be written:
 
 
     ```php
-    $less_file = 'myfile.less';
-    $css_file = 'myfile.css';
+    $inputFile = "myfile.less";
+    $outputFile = "myfile.css";
+
+    $less = new lessc;
 
     // create a new cache object, and compile
-    $cache = lessc::cexecute('myfile.less');
-    file_put_contents($css_file, $cache['compiled']);
+    $cache = $less->cachedCompile($inputFile);
+
+    file_put_contents($outputFile, $cache["compiled"]);
 
     // the next time we run, write only if it has updated
-    $last_updated = $cache['updated'];
-    $cache = lessc::cexecute($cache);
-    if ($cache['updated'] > $last_updated) {
-        file_put_contents($css_file, $cache['compiled']);
+    $last_updated = $cache["updated"];
+    $cache = $less->cachedCompile($cache);
+    if ($cache["updated"] > $last_updated) {
+        file_put_contents($outputFile, $cache["compiled"]);
     }
 
     ```
@@ -619,75 +1060,127 @@ like a file or in persistent memory.
 An example with saving cache object to a file:
 
     ```php
-    function auto_compile_less($less_fname, $css_fname) {
+    function autoCompileLess($inputFile, $outputFile) {
       // load the cache
-      $cache_fname = $less_fname.".cache";
-      if (file_exists($cache_fname)) {
-        $cache = unserialize(file_get_contents($cache_fname));
+      $cacheFile = $inputFile.".cache";
+
+      if (file_exists($cacheFile)) {
+        $cache = unserialize(file_get_contents($cacheFile));
       } else {
-        $cache = $less_fname;
+        $cache = $inputFile;
       }
 
-      $new_cache = lessc::cexecute($cache);
-      if (!is_array($cache) || $new_cache['updated'] > $cache['updated']) {
-        file_put_contents($cache_fname, serialize($new_cache));
-        file_put_contents($css_fname, $new_cache['compiled']);
+      $less = new lessc;
+      $newCache = $less->cachedCompile($cache);
+
+      if (!is_array($cache) || $newCache["updated"] > $cache["updated"]) {
+        file_put_contents($cacheFile, serialize($newCache));
+        file_put_contents($outputFile, $newCache['compiled']);
       }
     }
 
-    auto_compile_less('myfile.less', 'myfile.css')
-
+    autoCompileLess('myfile.less', 'myfile.css');
     ```
 
-`lessc:cexecute` takes an optional second argument, `$force`. Passing in true
-will cause the input to always be recompiled.
+`cachedCompile` method takes an optional second argument, `$force`. Passing in
+true will cause the input to always be recompiled.
 
 ### Error Handling
 
-All of the following methods will throw an `Exception` if the parsing fails:
+All of the compile methods will throw an `Exception` if the parsing fails or
+there is a compile time error. Compile time errors include things like passing
+incorrectly typed values for functions that expect specific things, like the
+color manipulation functions.
 
     ```php
-    $less = new lessc();
+    $less = new lessc;
     try {
-        $less->parse("} invalid LESS }}}");
+        $less->compile("} invalid LESS }}}");
     } catch (Exception $ex) {
         echo "lessphp fatal error: ".$ex->getMessage();
     }
     ```
 ### Setting Variables From PHP
 
-The `parse` function takes a second optional argument. If you want to
-initialize variables from outside the LESS file then you can pass in an
-associative array of names and values. The values will parsed as CSS values:
+Before compiling any code you can set initial LESS variables from PHP. The
+`setVariables` method lets us do this. It takes an associative array of names
+to values. The values must be strings, and will be parsed into correct CSS
+values.
+
 
     ```php
-    $less = new lessc();
-    echo $less->parse(".magic { color: @color;  width: @base - 200; }", 
-        array(
-            'color' => 'red';
-            'base' => '960px';
-        ));
+    $less = new lessc;
+
+    $less->setVariables(array(
+      "color" => "red",
+      "base" => "960px"
+    ));
+
+    echo $less->compile(".magic { color: @color;  width: @base - 200; }");
     ```
 
-You can also do this when loading from a file, but remember to set the first
-argument of the parse function to `null`, otherwise it will try to compile that
-instead of the file:
+If you need to unset a variable, the `unsetVariable` method is available. It
+takes the name of the variable to unset.
 
     ```php
-    $less = new lessc("myfile.less");
-    echo $less->parse(null, array('color' => 'blue'));
+    $less->unsetVariable("color");
+    ```
+
+Be aware that the value of the variable is a string containing a CSS value. So
+if you want to pass a LESS string in, you're going to need two sets of quotes.
+One for PHP and one for LESS.
+
+
+    ```php
+    $less->setVariables(array(
+      "url" => "'http://example.com.com/'"
+    ));
+
+    echo $less->compile("body { background: url("@{url}/bg.png"); }");
+    ```
+
+### Import Directory
+
+When running the `@import` directive, an array of directories called the import
+search path is searched through to find the file being asked for.
+
+By default, when using `compile`, the import search path just contains `""`,
+which is equivalent to the current directory of the script. If `compileFile` is
+used, then the directory of the file being compiled is used as the starting
+import search path.
+
+Two methods are available for configuring the search path.
+
+`setImportDir` will overwrite the search path with its argument. If the value
+isn't an array it will be converted to one.
+
+
+In this example, `@import "colors";` will look for either
+`assets/less/colors.less` or `assets/bootstrap/colors.less` in that order:
+
+    ```php
+    $less->setImportDir(array("assets/less/", "assets/bootstrap");
+
+    echo $less->compile('@import "colors";');
+    ```
+
+`addImportDir` will append a single path to the import search path instead of
+overwritting the whole thing.
+
+    ```php
+    $less->addImportDir("public/stylesheets");
     ```
 
 ### Custom Functions
 
 **lessphp** has a simple extension interface where you can implement user
 functions that will be exposed in LESS code during the compile. They can be a
-little tricky though because you need to work with the  **lessphp** type system.
+little tricky though because you need to work with the **lessphp** type system.
 
-An instance of `lessc`, the **lessphp** compiler has two relevant methods:
-`registerFunction` and `unregisterFunction`. `registerFunction` takes two
-arguments, a name and a callable value. `unregisterFunction` just takes the
-name of an existing function to remove.
+The two methods we are interested in are `registerFunction` and
+`unregisterFunction`. `registerFunction` takes two arguments, a name and a
+callable value. `unregisterFunction` just takes the name of an existing
+function to remove.
 
 Here's an example that adds a function called `double` that doubles any numeric
 argument:
@@ -701,11 +1194,11 @@ argument:
         return array($type, $value*2);
     }
 
-    $myless = new myless();
-    $myless->registerFunction("double", "lessphp_double");
+    $less = new lessc;
+    $less->registerFunction("double", "lessphp_double");
 
     // gives us a width of 800px
-    echo $myless->parse("div { width: double(400px); }");
+    echo $less->compile("div { width: double(400px); }");
     ```
 
 The second argument to `registerFunction` is any *callable value* that is
@@ -715,9 +1208,9 @@ If we are using PHP 5.3 or above then we are free to pass a function literal
 like so:
 
     ```php
-    $myless->registerFunction("double", function($arg) {
-        list($type, $value) = $arg;
-        return array($type, $value*2);
+    $less->registerFunction("double", function($arg) {
+        list($type, $value, $unit) = $arg;
+        return array($type, $value*2, $unit);
     });
     ```
 
@@ -729,16 +1222,16 @@ is a string representing the type, and the other elements make up the
 associated data for that value.
 
 The best way to get an understanding of the system is to register is dummy
-function which does a `vardump` on the argument. Try passing the function
+function which does a `var_dump` on the argument. Try passing the function
 different values from LESS and see what the results are.
 
-The return value of the registered function must also be a **lessphp** type, but if it is
-a string or numeric value, it will automatically be coerced into an appropriate
-typed value. In our example, we reconstruct the value with our modifications
-while making sure that we preserve the original type.
+The return value of the registered function must also be a **lessphp** type,
+but if it is a string or numeric value, it will automatically be coerced into
+an appropriate typed value. In our example, we reconstruct the value with our
+modifications while making sure that we preserve the original type.
 
-In addition to the arguments passed from **lessphp**, the instnace of
-**lessphp** itself is sent to the registered function as the second argument.
+The instance of **lessphp** itself is sent to the registered function as the
+second argument in addition to the arguments array.
 
 ## Command Line Interface
 
@@ -775,8 +1268,8 @@ Errors from watch mode are written to standard out.
 
 ## License
 
-Copyright (c) 2010 Leaf Corcoran, <http://leafo.net/lessphp>
- 
+Copyright (c) 2012 Leaf Corcoran, <http://leafo.net/lessphp>
+
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including
@@ -784,10 +1277,10 @@ without limitation the rights to use, copy, modify, merge, publish,
 distribute, sublicense, and/or sell copies of the Software, and to
 permit persons to whom the Software is furnished to do so, subject to
 the following conditions:
- 
+
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND

@@ -19,13 +19,13 @@
   height: @b + @x + 0px; // 24px
   margin-top: -@b; // -20px
   margin-bottom: 10 - -@b; // 30px
-  @c: @c + #001;
-  color: @c;
+  @d: @c + #001;
+  color: @d;
   background: @light-blue;
   font-family: @fonts;
   margin: @m + 0px; // 3px
-  font-size: 10px/12px;
-  font-size: 120%/120%;
+  font: 10px/12px serif;
+  font: 120%/120% serif;
 }
 
 .external {
@@ -34,5 +34,12 @@
   background: @rgba-color;
   padding: @nonexistant + 4px;
 }
+
+@hello: 44px;
+@something: "hello";
+@cool: something;
+
+color: @@something;
+color: @@@cool;
 
 
