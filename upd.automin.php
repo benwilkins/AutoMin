@@ -11,7 +11,7 @@
  * @since		Version 2.0
  * @filesource
  */
- 
+
 // ------------------------------------------------------------------------
 
 /**
@@ -25,14 +25,14 @@
  */
 
 class Automin_upd {
-	
+
 	/**
 	 * Provides the version number to EE
 	 * Set in the constructor since it comes from the model.
 	 * @var string
 	 * @author Jesse Bunch
 	*/
-	public $version = '2.1.2';
+	public $version = '2.1.3';
 
 	/**
 	 * Holds the EE instance
@@ -40,7 +40,7 @@ class Automin_upd {
 	 * @author Jesse Bunch
 	*/
 	private $EE;
-	
+
 	/**
 	 * Constructor
 	 * @author Jesse Bunch
@@ -48,7 +48,7 @@ class Automin_upd {
 	public function __construct() {
 		$this->EE =& get_instance();
 	}
-	
+
 	/**
 	 * Installation routine
 	 * @return bool TRUE
@@ -62,7 +62,7 @@ class Automin_upd {
 			'has_cp_backend' => "y",
 			'has_publish_fields' => 'n'
 		);
-		
+
 		$this->EE->db->insert('modules', $module_data);
 
 		// AutoMin table
@@ -77,15 +77,15 @@ class Automin_upd {
 					) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
 		$sql[] = "INSERT INTO exp_automin_preferences(site_id) VALUES({$this->EE->config->item('site_id')})";
-		
+
 		foreach($sql as $query) {
 			$this->EE->db->query($query);
 		}
 
-		
+
 		return TRUE;
 	}
-	
+
 	/**
 	 * Uninstallation routine
 	 * @return bool TRUE
@@ -97,18 +97,18 @@ class Automin_upd {
 								->get_where('modules', array(
 									'module_name'	=> 'Automin'
 								))->row('module_id');
-		
+
 		$this->EE->db->where('module_id', $module_id)
 					 ->delete('module_member_groups');
-		
+
 		$this->EE->db->where('module_name', 'Automin')
 					 ->delete('modules');
 
 		$this->EE->db->query("DROP TABLE IF EXISTS exp_automin_preferences");
-		
+
 		return TRUE;
 	}
-	
+
 	/**
 	 * Update routine
 	 * @param string $current The version to upgrade to.
@@ -122,10 +122,10 @@ class Automin_upd {
 			$this->install();
 			return TRUE;
 		}
-		
+
 		return TRUE;
 	}
-	
+
 }
 /* End of file upd.automin.php */
 /* Location: /system/expressionengine/third_party/automin/upd.automin.php */

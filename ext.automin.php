@@ -11,7 +11,7 @@
  * @since		Version 2.0
  * @filesource
  */
- 
+
 // ------------------------------------------------------------------------
 
 /**
@@ -25,16 +25,16 @@
  */
 
 class Automin_ext {
-	
+
 	public $settings 		= array();
 	public $description		= 'AutoMin extension compresses your HTML markup.';
 	public $docs_url		= 'https://github.com/bunchjesse/AutoMin';
 	public $name			= 'AutoMin';
 	public $settings_exist	= 'n';
-	public $version			= '2.1.2';
-	
+	public $version			= '2.1.3';
+
 	private $EE;
-	
+
 	/**
 	 * Constructor
 	 * @param mixed	Settings array or empty string if none exist.
@@ -43,7 +43,7 @@ class Automin_ext {
 		$this->EE =& get_instance();
 		$this->settings = $settings;
 	}
-	
+
 	/**
 	 * Activate Extension
 	 * This function enters the extension into the exp_extensions table
@@ -54,7 +54,7 @@ class Automin_ext {
 	public function activate_extension() {
 		// Setup custom settings in this array.
 		$this->settings = array();
-		
+
 		$data = array(
 			'class'		=> __CLASS__,
 			'method'	=> 'template_post_parse',
@@ -64,10 +64,10 @@ class Automin_ext {
 			'enabled'	=> 'y'
 		);
 
-		$this->EE->db->insert('extensions', $data);			
-		
-	}	
-	
+		$this->EE->db->insert('extensions', $data);
+
+	}
+
 	/**
 	 * Hook for processing template output.
 	 * @param string $template_string The template markup
@@ -76,18 +76,18 @@ class Automin_ext {
 	 * @return string The final template string
 	 */
 	public function template_post_parse($template_string, $is_embed, $site_id) {
-		
+
 		$final_string = $template_string;
 
 		// AutoMin model
 		$this->EE->load->model('automin_model');
 
 		// Prior output?
-		if (isset($this->EE->extensions->last_call) 
+		if (isset($this->EE->extensions->last_call)
 			&& $this->EE->extensions->last_call) {
 			$final_string = $this->EE->extensions->last_call;
 		}
-		
+
 		// Is HTML minifcation disabled?
 		if (!$this->EE->automin_model->should_compress_markup()) {
 			return $final_string;
@@ -101,7 +101,7 @@ class Automin_ext {
 			require_once('libraries/class.html.min.php');
 			$final_string = Minify_HTML::minify($final_string);
 			$data_length_after = strlen($final_string) / 1024;
-			
+
 			// Log results
 			$data_savings_kb = $data_length_before - $data_length_after;
 			$data_savings_percent = $data_savings_kb / $data_length_before;
@@ -140,8 +140,8 @@ class Automin_ext {
 		if ($current == '' OR $current == $this->version) {
 			return FALSE;
 		}
-	}	
-	
+	}
+
 }
 
 /* End of file ext.automin.php */

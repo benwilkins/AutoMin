@@ -18,6 +18,9 @@ Thanks to the minify project for their CSS compressor and the JSMin project for 
 
 Changelog
 ---
+### Version 2.1.3
+- Fixed Bug #23. Updated LessPHP to support the latest version of Twitter Bootsrap.
+
 ### Version 2.1.2
  - Fixed Bug #10. When compiling less, the .less extension is no longer given to the cache file.
 
@@ -35,7 +38,7 @@ Changelog
 ### Version 2.0
  - Added support for LESS compilation! Updated the CSS and JS compression classes.
  - Added ability to override AutoMin's configuration options in the config.php file.
- - Refactored function names to adhere to EllisLab coding guidelines. 
+ - Refactored function names to adhere to EllisLab coding guidelines.
  - Removed an unnecessary file read when returning cached data. When returning compiled source code, the timestamp of the latest-modified file is appended to the compiled source file so that browsers will cache files as long as possible---but not too long.
 
 ### Version 1.3.1
@@ -80,7 +83,7 @@ Example Usage
 
 ####JavaScript
 
-	{exp:automin:js 
+	{exp:automin:js
 		attribute:type="text/javascript"
 	}
 		<script type="text/javascript" src="/js/jquery.js"></script>
@@ -97,10 +100,10 @@ Example Usage
 
 ####CSS
 
-	{exp:automin:css 
-		attribute:type="text/css" 
-		attribute:title="default" 
-		attribute:rel="stylesheet" 
+	{exp:automin:css
+		attribute:type="text/css"
+		attribute:title="default"
+		attribute:rel="stylesheet"
 		attribute:media="screen, projection"
 	}
 		<link href="/css/core.css" type="text/css" title="default" rel="stylesheet" media="screen, projection">
@@ -109,9 +112,9 @@ Example Usage
 
 ####LESS
 	{exp:automin:less
-		attribute:type="text/css" 
-		attribute:title="default" 
-		attribute:rel="stylesheet" 
+		attribute:type="text/css"
+		attribute:title="default"
+		attribute:rel="stylesheet"
 		attribute:media="screen, projection"
 	}
 		<link rel="stylesheet/less" type="text/css" href="/css/styles.less">
