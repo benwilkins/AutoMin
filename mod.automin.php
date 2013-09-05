@@ -499,7 +499,7 @@ class Automin {
 			$file_path = $_SERVER['DOCUMENT_ROOT'] . $file_path;
 		}
 
-		return $this->EE->functions->remove_double_slashes($file_path);
+		return $this->EE->functions->reduce_double_slashes($file_path);
 
 	}
 	
