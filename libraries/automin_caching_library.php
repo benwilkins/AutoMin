@@ -102,7 +102,7 @@ class Automin_caching_library {
 	*/
 	private function get_cache_file_path($cache_key) {
 		$cache_path = $this->EE->automin_model->get_cache_path();
-		return $this->EE->functions->remove_double_slashes("$cache_path/$cache_key");
+		return $this->EE->functions->reduce_double_slashes("$cache_path/$cache_key");
 	}
 
 	/**
