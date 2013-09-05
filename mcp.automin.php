@@ -51,7 +51,11 @@ class Automin_mcp {
 	 */
 	public function index() {
 
-		$this->EE->cp->set_variable('cp_page_title', lang('automin_module_name'));
+	        if (version_compare(APP_VER, '2.6', '>=')) {
+			$this->EE->cp->cp_page_title = lang('automin_module_name');
+	        } else {
+			$this->EE->cp->set_variable('cp_page_title', lang('automin_module_name'));
+	        }
 
 		return $this->EE->load->view('settings', array(
 			'form_action' => $this->_form_url.AMP.'method=index_submit',
