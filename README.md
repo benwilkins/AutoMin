@@ -18,6 +18,9 @@ Thanks to the minify project for their CSS compressor and the JSMin project for 
 
 Changelog
 ---
+### Version 2.1.36
+- Fixed Deprecation notice #27 for optimal compatibility with versions >= 2.6. 
+
 ### Version 2.1.3
 - Fixed Bug #23. Updated LessPHP to support the latest version of Twitter Bootsrap.
 
