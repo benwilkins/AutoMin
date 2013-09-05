@@ -102,7 +102,14 @@ class Automin_caching_library {
 	*/
 	private function get_cache_file_path($cache_key) {
 		$cache_path = $this->EE->automin_model->get_cache_path();
-		return $this->EE->functions->reduce_double_slashes("$cache_path/$cache_key");
+
+		if (version_compare(APP_VER, '2.6', '>=')) {
+			$sFixedslashes = $this->EE->functions->reduce_double_slashes("$cache_path/$cache_key");
+		} else {
+			$sFixedslashes = $this->EE->functions->remove_double_slashes("$cache_path/$cache_key");
+		}
+
+		return $sFixedslashes;
 	}
 
 	/**
@@ -113,7 +120,14 @@ class Automin_caching_library {
 	*/
 	private function _get_cache_url_path($cache_key) {
 		$cache_path = $this->EE->automin_model->get_cache_url();
-		return $this->EE->functions->reduce_double_slashes("$cache_path/$cache_key");
+		
+		if (version_compare(APP_VER, '2.6', '>=')) {
+			$sFixedslashes = $this->EE->functions->reduce_double_slashes("$cache_path/$cache_key");
+		} else {
+			$sFixedslashes = $this->EE->functions->remove_double_slashes("$cache_path/$cache_key");
+		}
+		
+		return $sFixedslashes;
 	}
 
 
