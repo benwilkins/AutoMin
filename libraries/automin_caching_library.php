@@ -104,7 +104,8 @@ class Automin_caching_library {
 		$cache_path = $this->EE->automin_model->get_cache_path();
 
 		if (version_compare(APP_VER, '2.6', '>=')) {
-			$sFixedslashes = $this->EE->functions->reduce_double_slashes("$cache_path/$cache_key");
+			$this->EE->load->helper('string');
+			$sFixedslashes = reduce_double_slashes("$cache_path/$cache_key");
 		} else {
 			$sFixedslashes = $this->EE->functions->remove_double_slashes("$cache_path/$cache_key");
 		}
@@ -122,7 +123,8 @@ class Automin_caching_library {
 		$cache_path = $this->EE->automin_model->get_cache_url();
 		
 		if (version_compare(APP_VER, '2.6', '>=')) {
-			$sFixedslashes = $this->EE->functions->reduce_double_slashes("$cache_path/$cache_key");
+			$this->EE->load->helper('string');
+			$sFixedslashes = reduce_double_slashes("$cache_path/$cache_key");
 		} else {
 			$sFixedslashes = $this->EE->functions->remove_double_slashes("$cache_path/$cache_key");
 		}
