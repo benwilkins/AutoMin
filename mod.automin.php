@@ -500,7 +500,8 @@ class Automin {
 		}
 
 		if (version_compare(APP_VER, '2.6', '>=')) {
-			$sFixedslashes = $this->EE->functions->reduce_double_slashes($file_path);
+			$this->EE->load->helper('string');
+			$sFixedslashes = reduce_double_slashes($file_path);
 		} else {
 			$sFixedslashes = $this->EE->functions->remove_double_slashes($file_path);
 		}
