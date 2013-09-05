@@ -499,8 +499,13 @@ class Automin {
 			$file_path = $_SERVER['DOCUMENT_ROOT'] . $file_path;
 		}
 
-		return $this->EE->functions->reduce_double_slashes($file_path);
-
+		if (version_compare(APP_VER, '2.6', '>=')) {
+			$sFixedslashes = $this->EE->functions->reduce_double_slashes($file_path);
+		} else {
+			$sFixedslashes = $this->EE->functions->remove_double_slashes($file_path);
+		}
+		
+		return $sFixedslashes;
 	}
 	
 	/**
