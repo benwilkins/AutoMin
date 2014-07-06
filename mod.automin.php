@@ -107,9 +107,12 @@ class Automin {
 
 		// Gather information
 		$markup = $this->EE->TMPL->tagdata;
+		$template_array = $this->_extract_templates($markup);
 		$filename_array = $this->_extract_filenames($markup, $markup_type);
 		$filename_array = $this->_prep_filenames($filename_array);
-		$last_modified = $this->_find_last_modified_timestamp($filename_array);
+		
+		$filename_array = array_merge($template_array, $filename_array);
+		$lastest_modified = $this->_find_lastest_modified_timestamp($filename_array);
 
 		// File Extension
 		// LESS files should have a .css extension
@@ -120,13 +123,13 @@ class Automin {
 		$cache_filename = $this->EE->automin_caching_library->fetch_cache(
 			$cache_key, 
 			$markup, 
-			$last_modified
+			$lastest_modified
 		);
 		
 		// Output cache file, if valid
 		if (FALSE !== $cache_filename) {
 			$this->_write_log("Cache found and valid");
-			return $this->_format_output($cache_filename, $last_modified, $markup_type);
+			return $this->_format_output($cache_filename, $lastest_modified, $markup_type);
 		}
 
 		// Combine files, parse @imports if appropriate
@@ -152,7 +155,7 @@ class Automin {
 
 		// Log the savings
 		$data_savings_kb = $data_length_before - $data_length_after;
-		$data_savings_percent = ($data_savings_kb / $data_length_before) * 100;
+		@$data_savings_percent = ($data_savings_kb / $data_length_before) * 100;
 		$data_savings_message = sprintf(
 			'(%s Compression) Before: %1.0fkb / After: %1.0fkb / Data reduced by %1.2fkb or %1.2f%%',
 			strtoupper($markup_type),
@@ -179,10 +182,12 @@ class Automin {
 		}
 		
 		// Return the markup output
-		return $this->_format_output($cache_result, $last_modified, $markup_type);
+		return $this->_format_output($cache_result, $lastest_modified, $markup_type);
 		
 
 	}
+
+
 
 	/**
 	 * Compress and compile (if necessary) the code.
@@ -256,12 +261,12 @@ class Automin {
 	 * @return string
 	 * @author Jesse Bunch
 	*/
-	private function _format_output($cache_filename, $last_modified, $markup_type) {
+	private function _format_output($cache_filename, $lastest_modified, $markup_type) {
 
 		$markup_output = '';
 		
 		// Append modified time to the filename
-		$cache_filename = "$cache_filename?modified=$last_modified";
+		$cache_filename = "$cache_filename?modified=$lastest_modified";
 
 		// Format attributes
 		$tag_attributes = $this->_fetch_colon_params('attribute');
@@ -304,24 +309,20 @@ class Automin {
 	 * @author Jesse Bunch
 	*/
 	private function _combine_files($files_array, $should_parse_imports = FALSE) {
-		
+
 		$combined_output = '';
 		foreach ($files_array as $file_array) {
 			
-			if (!file_exists($file_array['server_path'])
-				OR !is_readable($file_array['server_path'])) {
+			if ($combined_output .= file_get_contents($file_array['server_path'])) {
+				// Parse @imports
+				if ($should_parse_imports) {
+					$combined_output = $this->_parse_css_imports(
+						$combined_output, 
+						$file_array['url_path']
+					);
+				}
+			} else {
 				return FALSE;
-			}
-
-			// Get file contents
-			$combined_output .= file_get_contents($file_array['server_path']);
-
-			// Parse @imports
-			if ($should_parse_imports) {
-				$combined_output = $this->_parse_css_imports(
-					$combined_output, 
-					$file_array['url_path']
-				);
 			}
 
 		}
@@ -336,17 +337,17 @@ class Automin {
 	 * @return int
 	 * @author Jesse Bunch
 	*/
-	private function _find_last_modified_timestamp($files_array) {
+	private function _find_lastest_modified_timestamp($files_array) {
 		
-		$last_modified_timestamp = 0;
+		$lastest_modified_timestamp = 0;
 		foreach ($files_array as $file_array) {
 			if ($file_array['last_modified']
-				AND $file_array['last_modified'] > $last_modified_timestamp) {
-				$last_modified_timestamp = $file_array['last_modified'];
+				AND $file_array['last_modified'] > $lastest_modified_timestamp) {
+				$lastest_modified_timestamp = $file_array['last_modified'];
 			}
 		}
 
-		return $last_modified_timestamp;
+		return $lastest_modified_timestamp;
 
 	}
 
@@ -426,6 +427,47 @@ class Automin {
 		return FALSE;
 
 	}
+	
+	/**
+	 * Extracts {path} and {stylesheet} tags from the markup based on the provided
+	 * markup type.
+	 * @param string $markup
+	 * @param string $markup_type Use one of the constants MARKUP_TYPE_X
+	 * @return array (of filenames)
+	 * @author Chris LeBlanc (eedfwChris)
+	*/
+	private function _extract_templates($markup) {
+		
+		$template_array = array();		
+		preg_match_all(
+			"#".LD."\s*(stylesheet|path)=[\042\047]?/?(.*?)/?[\042\047]?".RD."#",
+			$markup,
+			$templates
+		);
+
+		$i = 0;
+		foreach($templates[2] as $template)
+		{
+			$group_template_array = explode('/', $template, 2);
+			$this->EE->db->select('t.edit_date')->
+				from('exp_templates t, exp_template_groups tg')->
+				where('tg.group_name', $group_template_array[0])->
+				where('t.template_name', $group_template_array[1])->
+				where('t.site_id', $this->EE->config->item('site_id'));
+				
+			$query = $this->EE->db->get();
+			if ($query->num_rows() > 0) {
+				$result = $query->row();
+				$template_array[$i]['url_path'] = sprintf($this->EE->config->item('site_url') . '%s/%s',$group_template_array[0], $group_template_array[1]);
+				$template_array[$i]['server_path'] = sprintf($this->EE->config->item('site_url') . '%s/%s',$group_template_array[0], $group_template_array[1]);
+				$template_array[$i]['last_modified'] = $result->edit_date;
+			}
+			$i++;
+		}
+		
+		return $template_array;
+		
+	}
 
 	/**
 	 * Extracts parameters from the tag param array that are
@@ -472,6 +514,7 @@ class Automin {
 		// If the path is a full URL, return it
 		// We don't currently fetch remote files
 		if (0 === stripos($file_path, 'http')
+			OR 0 === stripos($file_path, 'https')
 			OR 0 === stripos($file_path, '//')) {
 			return $file_path;
 		}
